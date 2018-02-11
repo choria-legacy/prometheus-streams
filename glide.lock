@@ -1,0 +1,53 @@
+hash: 2b1f830ed16ec950cedcf30c0e150be06eb905a0c3b9c902308e2ebf871a7bb6
+updated: 2018-02-11T15:19:15.307314+01:00
+imports:
+- name: github.com/cespare/xxhash
+  version: 48099fad606eafc26e3a569fad19ff510fff4df6
+- name: github.com/choria-io/stream-replicator
+  version: 463aca6922c3118d570c9e226436a9938cf7b9f7
+  subpackages:
+  - backoff
+- name: github.com/ghodss/yaml
+  version: 0ca9ea5df5451ffdf184b4428c902747c2c11cd7
+- name: github.com/gogo/protobuf
+  version: c0656edd0d9eab7c66d1eb0c568f9039345796f7
+  subpackages:
+  - gogoproto
+  - proto
+  - protoc-gen-gogo/descriptor
+- name: github.com/nats-io/go-nats
+  version: d66cb54e6b7bdd93f0b28afc8450d84c780dfb68
+  subpackages:
+  - encoders/builtin
+  - util
+- name: github.com/nats-io/go-nats-streaming
+  version: 6e620057a207bd61e992c1c5b6a2de7b6a4cb010
+  subpackages:
+  - pb
+- name: github.com/nats-io/nuid
+  version: 33c603157d6fd1b0ac2599bcc4a286b36479a06d
+- name: github.com/prometheus/prometheus
+  version: 85f23d82a045d103ea7f3c89a91fba4a93e6367a
+  subpackages:
+  - pkg/labels
+  - storage
+- name: github.com/satori/go.uuid
+  version: f58768cc1a7a7e77a3bd49e98cdd21419399b6a3
+- name: github.com/sirupsen/logrus
+  version: d682213848ed68c0a260ca37d6dd5ace8423f5ba
+- name: golang.org/x/crypto
+  version: 9477e0b78b9ac3d0b03822fd95422e2fe07627cd
+  subpackages:
+  - ssh/terminal
+- name: golang.org/x/net
+  version: 5ccada7d0a7ba9aeb5d3aca8d3501b4c2a509fec
+  subpackages:
+  - context
+  - context/ctxhttp
+- name: golang.org/x/sys
+  version: e24f485414aeafb646f6fca458b0bf869c0880a1
+  subpackages:
+  - unix
+- name: gopkg.in/yaml.v2
+  version: d670f9405373e636a5a2765eea47fac0c9bc91a4
+testImports: []
