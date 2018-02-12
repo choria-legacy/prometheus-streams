@@ -144,7 +144,7 @@ Discovering hosts using the mc method for 2 second(s) .... 1
 
 prom.example.net
      Mode: poller
-   Paused: false
+   Paused: true
 
 
 Summary of Mode:
