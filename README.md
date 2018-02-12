@@ -104,6 +104,7 @@ push_gateway:
 
 # enable a choria based management interface for circuit breaking
 management:
+  identity: prom.example.net # defaults to hostname
   collective: prometheus # the default
   brokers:
     - choria.example.net:4222
@@ -141,11 +142,18 @@ Discovering hosts using the mc method for 2 second(s) .... 1
  * [ ============================================================> ] 1 / 1
 
 
-dust.local
-     mode: poller
-   paused: true
+prom.example.net
+     Mode: poller
+   Paused: false
 
 
+Summary of Mode:
+
+   poller = 1
+
+Summary of Paused:
+
+   false = 1
 
 Finished processing 1 / 1 hosts in 399.81 ms
 ```
@@ -153,6 +161,8 @@ Finished processing 1 / 1 hosts in 399.81 ms
 At this point all processing will stop, no polling will be done and received messages will be discarded.  Switch it again to enable.
 
 The `info` action returns the same data.
+
+You can extract the running configuration using something like `mco rpc rpcutil get_fact fact=config -T prometheus`
 
 **NOTE:** TLS is not currently supported, this feature is basically a bit of a work in progress / experiment.
 
