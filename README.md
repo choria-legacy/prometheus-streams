@@ -119,3 +119,25 @@ jobs:
 I set my Stream to keep 10 minutes of data only for this data everywhere.
 
 Configure Prometheus to consume data from the Push Gateway - here http://prometheus.dc2.example.net:9091/metrics.
+
+Packages
+--------
+
+RPMs for EL6 and 7 are published in the choria YUM repository, packages are called `prometheus-streams`.
+
+```ini
+[choria_release]
+name=choria_release
+baseurl=https://packagecloud.io/choria/release/el/$releasever/$basearch
+repo_gpgcheck=1
+gpgcheck=0
+enabled=1
+gpgkey=https://packagecloud.io/choria/release/gpgkey
+sslverify=1
+sslcacert=/etc/pki/tls/certs/ca-bundle.crt
+metadata_expire=300
+```
+
+## Thanks
+
+<img src="https://packagecloud.io/images/packagecloud-badge.png" width="158">
