@@ -1,4 +1,4 @@
-package: github.com/ripienaar/prometheus-streams
+package: github.com/choria-io/prometheus-streams
 import:
 - package: github.com/choria-io/stream-replicator
   subpackages:
