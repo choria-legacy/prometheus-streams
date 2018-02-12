@@ -5,10 +5,10 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/choria-io/prometheus-streams/config"
 	"github.com/choria-io/stream-replicator/backoff"
 	nats "github.com/nats-io/go-nats"
 	"github.com/nats-io/go-nats-streaming"
-	"github.com/ripienaar/prometheus-streams/config"
 	uuid "github.com/satori/go.uuid"
 	log "github.com/sirupsen/logrus"
 )

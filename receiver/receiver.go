@@ -12,12 +12,12 @@ import (
 	"sync"
 	"time"
 
-	"github.com/ripienaar/prometheus-streams/connection"
-	"github.com/ripienaar/prometheus-streams/scrape"
+	"github.com/choria-io/prometheus-streams/connection"
+	"github.com/choria-io/prometheus-streams/scrape"
 	log "github.com/sirupsen/logrus"
 
+	"github.com/choria-io/prometheus-streams/config"
 	"github.com/nats-io/go-nats-streaming"
-	"github.com/ripienaar/prometheus-streams/config"
 )
 
 var inbox = make(chan scrape.Scrape, 10)

@@ -9,7 +9,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/ripienaar/prometheus-streams/config"
+	"github.com/choria-io/prometheus-streams/config"
 	log "github.com/sirupsen/logrus"
 	"golang.org/x/net/context/ctxhttp"
 )

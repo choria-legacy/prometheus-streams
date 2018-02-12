@@ -9,9 +9,9 @@ import (
 	"sync"
 	"syscall"
 
-	"github.com/ripienaar/prometheus-streams/config"
-	"github.com/ripienaar/prometheus-streams/receiver"
-	"github.com/ripienaar/prometheus-streams/scrape"
+	"github.com/choria-io/prometheus-streams/config"
+	"github.com/choria-io/prometheus-streams/receiver"
+	"github.com/choria-io/prometheus-streams/scrape"
 	log "github.com/sirupsen/logrus"
 	kingpin "gopkg.in/alecthomas/kingpin.v2"
 )
