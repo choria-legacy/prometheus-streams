@@ -1,8 +1,12 @@
-hash: 2b1f830ed16ec950cedcf30c0e150be06eb905a0c3b9c902308e2ebf871a7bb6
-updated: 2018-02-11T15:19:15.307314+01:00
+hash: 510f73ee78ea21f1b5ad3f3768d361c04e850b94c275df543d7a9be59787620e
+updated: 2018-02-12T10:12:20.996992+01:00
 imports:
-- name: github.com/cespare/xxhash
-  version: 48099fad606eafc26e3a569fad19ff510fff4df6
+- name: github.com/alecthomas/template
+  version: a0175ee3bccc567396460bf5acd36800cb10c49c
+  subpackages:
+  - parse
+- name: github.com/alecthomas/units
+  version: 2efee857e7cfd4f3d0138cc3cbb1b4966962b93a
 - name: github.com/choria-io/stream-replicator
   version: 463aca6922c3118d570c9e226436a9938cf7b9f7
   subpackages:
@@ -48,6 +52,8 @@ imports:
   version: e24f485414aeafb646f6fca458b0bf869c0880a1
   subpackages:
   - unix
+- name: gopkg.in/alecthomas/kingpin.v2
+  version: 947dcec5ba9c011838740e680966fd7087a71d0d
 - name: gopkg.in/yaml.v2
   version: d670f9405373e636a5a2765eea47fac0c9bc91a4
 testImports: []
