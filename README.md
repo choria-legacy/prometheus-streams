@@ -1,35 +1,33 @@
-What?
-=====
+NATS Streaming based federation for Prometheus
+==============================================
 
-A federation system for Prometheus that sends metrics via NATS Streams rather than HTTP.
+A federation system for Prometheus that sends metrics via NATS Streams and into the Push Gateway.
 
-Why?
-----
+Overview
+--------
 
-First let me say this is a bad idea, in general, just don't even think of using this.
+First let me say this is a bad idea, in general, just don't even think of using this. You have to have the exact same problem this solves else you will be better off just using Prometheus as they recommend.
 
-Prometheus has it's own built in federation which, like Prometheus, is based on HTTP Polls.
+Prometheus has it's own built in federation which, like Prometheus, is based on HTTP Polls. A central Prometheus polls the data from each federated Prometheus - and each of those in turn does their own polling. In general this is what you should do - yes, it's weird, but it's a good fit for the Prometheus model and it's your best bet.
 
-If you want to have a central Prometheus it does HTTP polls to all remote Prometheus and present their data locally.  In general this is what you should do - yes, it's weird, but it's a good fit for the Prometheus model and it's your best bet.
-
-However, in my site I am unable to open the 40+ intra DC HTTP ports this requires - I don't think it would even be allowed let alone the amount of paper work that could consume years.
+In many sites though users are unable to open the intra DC HTTP ports this requires - in my case I don't think it would even be allowed let alone the amount of paper work that could consume years.
 
 I do already have a NATS Stream based middleware system that spans the globe, this system lets me piggy back on that globe spanning stream for sending my metrics to a central Prometheus.  Giving me a nice single instance for logging, metrics etc.
 
-Status?
--------
+When To Use
+-----------
 
-This is a work in progress, once it's done I'll probably move it into the _choria-io_ organization on GitHub.
+You should have all these criteria:
 
-Basic TODO:
+ - [ ] You cannot use the standard Prometheus Federation
+ - [ ] You do not have 100s of devices in every DC to monitor, 10s is what this is good at
+ - [ ] You understand the issues related to the [Push Gateway](https://github.com/prometheus/pushgateway) and you are happy to use it to expose the metrics to your central Prometheus
+ - [ ] You already have or do not have a problem running [NATS Streaming Server](https://github.com/nats-io/nats-streaming-server).  You can have one central Stream or many stitched together with the [Stream Replicator](https://github.com/choria-io/stream-replicator)
 
-  * Keep metrics
-  * RPMs
-  * Remove the Push Gateway dependency
-  * Tests
+If all this is true, go ahead and look to this tool for a possible solution to your problem.
 
-Architecture?
--------------
+Architecture
+------------
 
 The basic idea is that a poller/scraper will publish it's data into a NATS Stream and a Receiver will receiver the published data and push it into a [Push Gateway](https://github.com/prometheus/pushgateway).
 
@@ -63,14 +61,14 @@ The basic idea is that a poller/scraper will publish it's data into a NATS Strea
 
 ```
 
-At first this looks like an awful Rube Goldberg machine - and you're probably right, read the _Why?_ section - but this does avoid the problem with HTTP port from a central DC to all other DCs.  If you're in a big enterprise you'll appreciate this HTTP port is near impossible to provision.
+At first this looks like an awful Rube Goldberg machine - and you're probably right, read the _Overview_ section - but this does avoid the problem with HTTP port from a central DC to all other DCs.  If you're in a big enterprise you'll appreciate this HTTP port is near impossible to provision.
 
 In practice this works remarkably well, even if I use the [Choria Stream Replicator](https://github.com/choria-io/stream-replicator) to shift these metrics globally it all works quite well and gives me sub 1 minute monitoring resolution which is very very much better than the alternative enterprise monitoring systems I have at my disposal.
 
 I deploy many Poller instances - 1 per data centre - and 1 receiver to put the data into the Push Gateway.  For my use case of ~10 monitored targets per DC this is more than sufficient.
 
-Configuration?
---------------
+Configuration
+-------------
 
 A sample config can be seen here:
 
@@ -118,7 +116,6 @@ jobs:
           url: http://choria3.dc1.example.net:8222/choria/prometheus
 ```
 
-Contact?
---------
+I set my Stream to keep 10 minutes of data only for this data everywhere.
 
-rip@devco.net / @ripienaar / https://www.devco.net/
+Configure Prometheus to consume data from the Push Gateway - here http://prometheus.dc2.example.net:9091/metrics.
