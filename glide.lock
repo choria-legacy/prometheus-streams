@@ -1,5 +1,5 @@
-hash: 463aa2299832bcba9a8c4ec6c118661888636d351b8ff338fedc1e3ecd20f8fc
-updated: 2018-02-12T13:44:51.614802+01:00
+hash: 354fe53a52f61f17446f312d8b110c5a44f62cef6b1ce89cfeb4d222705d9fdf
+updated: 2018-02-12T15:32:45.371541+01:00
 imports:
 - name: github.com/alecthomas/template
   version: a0175ee3bccc567396460bf5acd36800cb10c49c
@@ -7,6 +7,24 @@ imports:
   - parse
 - name: github.com/alecthomas/units
   version: 2efee857e7cfd4f3d0138cc3cbb1b4966962b93a
+- name: github.com/beorn7/perks
+  version: 4c0e84591b9aa9e6dcfdf3e020114cd81f89d5f9
+  subpackages:
+  - quantile
+- name: github.com/choria-io/go-choria
+  version: 294656073efe1103bcd8e30d1156347d2177e184
+  subpackages:
+  - backoff
+  - build
+  - choria
+  - srvcache
+- name: github.com/choria-io/go-protocol
+  version: 72bc3ca9593e692e55a3f5dda61194803f54d619
+  subpackages:
+  - protocol
+  - protocol/v1
+- name: github.com/choria-io/go-validator
+  version: 99e0f793dd701e8cf45fd27624390ea43699e3b9
 - name: github.com/choria-io/stream-replicator
   version: 463aca6922c3118d570c9e226436a9938cf7b9f7
   subpackages:
@@ -19,6 +37,14 @@ imports:
   - gogoproto
   - proto
   - protoc-gen-gogo/descriptor
+- name: github.com/golang/protobuf
+  version: 1643683e1b54a9e88ad26d98f81400c8c9d9f4f9
+  subpackages:
+  - proto
+- name: github.com/matttproud/golang_protobuf_extensions
+  version: c12348ce28de40eed0136aa2b644d0ee0650e56c
+  subpackages:
+  - pbutil
 - name: github.com/nats-io/go-nats
   version: d66cb54e6b7bdd93f0b28afc8450d84c780dfb68
   subpackages:
@@ -30,6 +56,25 @@ imports:
   - pb
 - name: github.com/nats-io/nuid
   version: 33c603157d6fd1b0ac2599bcc4a286b36479a06d
+- name: github.com/prometheus/client_golang
+  version: 967789050ba94deca04a5e84cce8ad472ce313c1
+  subpackages:
+  - prometheus
+  - prometheus/promhttp
+- name: github.com/prometheus/client_model
+  version: 99fa1f4be8e564e8a6b613da7fa6f46c9edafc6c
+  subpackages:
+  - go
+- name: github.com/prometheus/common
+  version: 89604d197083d4781071d3c65855d24ecfb0a563
+  subpackages:
+  - expfmt
+  - internal/bitbucket.org/ww/goautoneg
+  - model
+- name: github.com/prometheus/procfs
+  version: b15cd069a83443be3154b719d0cc9fe8117f09fb
+  subpackages:
+  - xfs
 - name: github.com/prometheus/prometheus
   version: 85f23d82a045d103ea7f3c89a91fba4a93e6367a
   subpackages:
@@ -39,6 +84,16 @@ imports:
   version: f58768cc1a7a7e77a3bd49e98cdd21419399b6a3
 - name: github.com/sirupsen/logrus
   version: d682213848ed68c0a260ca37d6dd5ace8423f5ba
+- name: github.com/tidwall/gjson
+  version: 87033efcaec6215741137e8ca61952c53ef2685d
+- name: github.com/tidwall/match
+  version: 1731857f09b1f38450e2c12409748407822dc6be
+- name: github.com/xeipuuv/gojsonpointer
+  version: 6fe8760cad3569743d51ddbb243b26f8456742dc
+- name: github.com/xeipuuv/gojsonreference
+  version: e02fc20de94c78484cd5ffb007f8af96be030a45
+- name: github.com/xeipuuv/gojsonschema
+  version: 511d08a359d14c0dd9c4302af52ee9abb6f93c2a
 - name: golang.org/x/crypto
   version: 9477e0b78b9ac3d0b03822fd95422e2fe07627cd
   subpackages:

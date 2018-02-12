@@ -37,6 +37,10 @@ func targetWorker(ctx context.Context, wg *sync.WaitGroup, jobname string, targe
 	for {
 		select {
 		case <-timer.C:
+			if paused {
+				continue
+			}
+
 			log.Debugf("Polling %s @ %s", target.Name, target.URL)
 			timeout, _ := context.WithTimeout(ctx, interval)
 			resp, err := ctxhttp.Get(timeout, client, target.URL)

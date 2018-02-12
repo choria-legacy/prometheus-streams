@@ -20,6 +20,8 @@ type Scrape struct {
 }
 
 var outbox = make(chan Scrape, 1000)
+var paused bool
+var running bool
 
 func Run(ctx context.Context, wg *sync.WaitGroup, scrapeCfg *config.Config) {
 	defer wg.Done()
@@ -32,6 +34,8 @@ func Run(ctx context.Context, wg *sync.WaitGroup, scrapeCfg *config.Config) {
 		wg.Add(1)
 		go jobWorker(ctx, wg, name, job)
 	}
+
+	running = true
 
 	for {
 		select {
@@ -49,4 +53,22 @@ func Run(ctx context.Context, wg *sync.WaitGroup, scrapeCfg *config.Config) {
 			return
 		}
 	}
+}
+
+func Paused() bool {
+	return paused
+}
+
+func FlipCircuitBreaker() bool {
+	paused = !paused
+
+	if running {
+		log.Warnf("Switching the circuit breaker: paused: %t", paused)
+	}
+
+	return Paused()
+}
+
+func Running() bool {
+	return running
 }

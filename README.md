@@ -22,6 +22,7 @@ You should have all these criteria:
  - [ ] You cannot use the standard Prometheus Federation
  - [ ] You do not have 100s of devices in every DC to monitor, 10s is what this is good at
  - [ ] You understand the issues related to the [Push Gateway](https://github.com/prometheus/pushgateway) and you are happy to use it to expose the metrics to your central Prometheus
+ - [ ] You looked at [PushProx](https://github.com/RobustPerception/PushProx) and decided not to use it - perhaps you also can't make extra ports to your central DC
  - [ ] You already have or do not have a problem running [NATS Streaming Server](https://github.com/nats-io/nats-streaming-server).  You can have one central Stream or many stitched together with the [Stream Replicator](https://github.com/choria-io/stream-replicator)
 
 If all this is true, go ahead and look to this tool for a possible solution to your problem.
@@ -101,6 +102,12 @@ receiver_stream:
 push_gateway:
   url: http://prometheus.dc2.example.net:9091
 
+# enable a choria based management interface for circuit breaking
+management:
+  collective: prometheus # the default
+  brokers:
+    - choria.example.net:4222
+
 # This is what gets polled
 jobs:
   # a choria job, this maps into the push gateway URL
@@ -119,6 +126,35 @@ jobs:
 I set my Stream to keep 10 minutes of data only for this data everywhere.
 
 Configure Prometheus to consume data from the Push Gateway - here http://prometheus.dc2.example.net:9091/metrics.
+
+Management
+----------
+
+A Choria server is embedded that can be used for management capabilities, this include extracting current information about the process and a circuit breaker to stop all processing.
+
+To enable it provide a *management* block in the configuration else it will be ignored.
+
+```
+$ mco rpc prometheus_streams switch -T prometheus
+Discovering hosts using the mc method for 2 second(s) .... 1
+
+ * [ ============================================================> ] 1 / 1
+
+
+dust.local
+     mode: poller
+   paused: true
+
+
+
+Finished processing 1 / 1 hosts in 399.81 ms
+```
+
+At this point all processing will stop, no polling will be done and received messages will be discarded.  Switch it again to enable.
+
+The `info` action returns the same data.
+
+**NOTE:** TLS is not currently supported, this feature is basically a bit of a work in progress / experiment.
 
 Packages
 --------
