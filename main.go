@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/ripienaar/prometheus-streams/cmd"
+	"github.com/choria-io/prometheus-streams/cmd"
 )
 
 func main() {

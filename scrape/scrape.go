@@ -5,8 +5,8 @@ import (
 	"encoding/json"
 	"sync"
 
-	"github.com/ripienaar/prometheus-streams/config"
-	"github.com/ripienaar/prometheus-streams/connection"
+	"github.com/choria-io/prometheus-streams/config"
+	"github.com/choria-io/prometheus-streams/connection"
 	log "github.com/sirupsen/logrus"
 )
 
