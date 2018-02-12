@@ -1,0 +1,13 @@
+[Unit]
+Description=NATS Stream based federation for Prometheus - Poller
+After=network.target
+
+[Service]
+StandardOutput=syslog
+StandardError=syslog
+User=nobody
+Group=nobody
+ExecStart={{cpkg_bindir}}/{{cpkg_name}} poller --config={{cpkg_etcdir}}/prometheus-streams.yaml
+
+[Install]
+WantedBy=multi-user.target

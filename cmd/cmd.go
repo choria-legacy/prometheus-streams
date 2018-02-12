@@ -25,11 +25,14 @@ var (
 	ctx     context.Context
 	cancel  func()
 	debug   bool
+	version string
+	sha     string
 )
 
 // Run sets up the CLI and perform the users desired actions
 func Run() {
 	app := kingpin.New("prometheus-streams", "Prometheus NATS Streaming based poller and publisher")
+	app.Version(version)
 	app.Author("R.I.Pienaar <rip@devco.net>")
 
 	app.Flag("config", "Configuration file").Required().ExistingFileVar(&cfile)

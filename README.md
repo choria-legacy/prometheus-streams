@@ -19,7 +19,7 @@ I do already have a NATS Stream based middleware system that spans the globe, th
 Status?
 -------
 
-This is a work in progress, once it's done I'll probably move it into the choria-io organization on GitHub.
+This is a work in progress, once it's done I'll probably move it into the _choria-io_ organization on GitHub.
 
 Basic TODO:
 

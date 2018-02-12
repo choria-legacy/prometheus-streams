@@ -3,3 +3,4 @@ vendor
 prometheus-streams
 *yaml
 .DS_Store
+prometheus-streams-*

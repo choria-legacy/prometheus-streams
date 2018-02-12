@@ -1,0 +1,119 @@
+#!/bin/bash
+#
+# Init script for {{cpkg_name}}-poller
+#
+### BEGIN INIT INFO
+# Provides:          {{cpkg_name}}-poller
+# Required-Start:    $remote_fs $syslog
+# Required-Stop:     $remote_fs $syslog
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: NATS Stream based federation for Prometheus
+# Description:       Polls for Prometheus metrics publish them to a NATS Stream
+### END INIT INFO
+
+# source function library
+. /etc/rc.d/init.d/functions
+
+prog="{{cpkg_name}}"
+user="nobody"
+exec="{{cpkg_bindir}}/{{cpkg_name}}"
+pidfile="/var/run/${prog}/poller.pid"
+lockfile="/var/lock/subsys/${prog}"
+logfile="/var/log/${prog}"
+conffile="{{cpkg_etcdir}}/${prog}.yaml"
+
+# pull in sysconfig settings
+[ -e "/etc/sysconfig/${prog}-poller" ] && . "/etc/sysconfig/${prog}-poller"
+
+args="poller --config=${conffile} --pid=${pidfile} ${EXTRA_OPTS}"
+
+start() {
+    [ -x $exec ] || exit 5
+    [ -f $conffile ] || exit 6
+    [ -d $confdir ] || exit 6
+
+    umask 077
+
+    touch $logfile $pidfile
+
+    echo -n $"Starting ${prog}-poller: "
+
+    daemon --pidfile=${pidfile} " { nohup ${exec} poller --config ${conffile} --pid ${pidfile} > ${logfile} 2>&1 & } ; sleep 0.5 ; [ -f ${pidfile} ]"
+
+    RETVAL=$?
+    echo
+
+    [ $RETVAL -eq 0 ] && touch $lockfile
+
+    return $RETVAL
+}
+
+stop() {
+  echo -n $"Shutting down ${prog}-poller: "
+
+  if rh_status_q ; then
+    pid=$(cat "$pidfile")
+    kill -TERM $pid
+
+    for i in 1 2 3 4 5 ; do
+      rh_status_q || break
+      sleep 1
+    done
+
+    if rh_status_q ; then
+        echo "Timeout reached. Killing ${prog}-poller (pid ${pid}) with SIGKILL."
+        kill -KILL $pid
+        echo "${prog}-poller killed with SIGKILL."
+    else
+      echo "${prog}-poller stopped."
+    fi
+  fi
+}
+
+restart() {
+    stop
+    sleep 1
+    start
+}
+
+force_reload() {
+    restart
+}
+
+rh_status() {
+    status -p "${pidfile}" -l $prog $exec
+}
+
+rh_status_q() {
+    rh_status >/dev/null 2>&1
+}
+
+case "$1" in
+    start)
+        rh_status_q && exit 0
+        $1
+        ;;
+    stop)
+        rh_status_q || exit 0
+        $1
+        ;;
+    restart)
+        $1
+        ;;
+    force-reload)
+        force_reload
+        ;;
+    status)
+        rh_status
+        ;;
+    condrestart|try-restart)
+        rh_status_q || exit 0
+        restart
+        ;;
+    *)
+        echo $"Usage: $0 {start|stop|status|restart|condrestart|try-restart|force-reload}"
+        exit 2
+esac
+
+exit $?
