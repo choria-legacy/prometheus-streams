@@ -22,6 +22,8 @@ import (
 
 var inbox = make(chan scrape.Scrape, 10)
 var maxAge int64
+var paused bool
+var running bool
 
 func Run(ctx context.Context, wg *sync.WaitGroup, cfg *config.Config) {
 	defer wg.Done()
@@ -30,6 +32,11 @@ func Run(ctx context.Context, wg *sync.WaitGroup, cfg *config.Config) {
 
 	conn := connection.NewConnection(ctx, cfg.ReceiverStream)
 
+	// timed out, ctx cancelled etc, anyway, its dead, nothing can be done
+	if conn.Conn == nil {
+		return
+	}
+
 	opts := []stan.SubscriptionOption{
 		stan.DurableName(cfg.ReceiverStream.ClientID),
 		stan.DeliverAllAvailable(),
@@ -37,14 +44,34 @@ func Run(ctx context.Context, wg *sync.WaitGroup, cfg *config.Config) {
 		stan.MaxInflight(10),
 	}
 
-	go poster(cfg.PushGateway.URL)
-
 	conn.Conn.Subscribe(cfg.ReceiverStream.Topic, handler, opts...)
+
+	running = true
+
+	go poster(cfg.PushGateway.URL)
 
 	select {
 	case <-ctx.Done():
 		conn.Conn.Close()
 	}
+}
+
+func Running() bool {
+	return running
+}
+
+func Paused() bool {
+	return paused
+}
+
+func FlipCircuitBreaker() bool {
+	paused = !paused
+
+	if running {
+		log.Warnf("Switching the circuit breaker: paused: %t", paused)
+	}
+
+	return Paused()
 }
 
 func poster(url string) {
@@ -88,6 +115,10 @@ func poster(url string) {
 
 func handler(msg *stan.Msg) {
 	defer msg.Ack()
+
+	if paused {
+		return
+	}
 
 	s := scrape.Scrape{}
 

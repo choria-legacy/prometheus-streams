@@ -9,7 +9,9 @@ import (
 	"sync"
 	"syscall"
 
+	"github.com/choria-io/prometheus-streams/build"
 	"github.com/choria-io/prometheus-streams/config"
+	"github.com/choria-io/prometheus-streams/management"
 	"github.com/choria-io/prometheus-streams/receiver"
 	"github.com/choria-io/prometheus-streams/scrape"
 	log "github.com/sirupsen/logrus"
@@ -25,14 +27,12 @@ var (
 	ctx     context.Context
 	cancel  func()
 	debug   bool
-	version string
-	sha     string
 )
 
 // Run sets up the CLI and perform the users desired actions
 func Run() {
 	app := kingpin.New("prometheus-streams", "Prometheus NATS Streaming based poller and publisher")
-	app.Version(version)
+	app.Version(build.Version)
 	app.Author("R.I.Pienaar <rip@devco.net>")
 
 	app.Flag("config", "Configuration file").Required().ExistingFileVar(&cfile)
@@ -61,6 +61,11 @@ func Run() {
 	defer cancel()
 
 	go interrupWatcher(cancel)
+
+	err = configureManagement()
+	if err != nil {
+		kingpin.Fatalf("Could not configure management: %s", err)
+	}
 
 	switch cmd {
 	case p.FullCommand():
@@ -119,6 +124,22 @@ func configureLogging() {
 	if cfg.Debug {
 		log.SetLevel(log.DebugLevel)
 	}
+}
+
+func configureManagement() error {
+	if cfg.Management == nil {
+		return nil
+	}
+
+	err := management.Configure(cfg)
+	if err != nil {
+		return err
+	}
+
+	wg.Add(1)
+	go management.Run(ctx, wg)
+
+	return nil
 }
 
 func writePID(pidfile string) {

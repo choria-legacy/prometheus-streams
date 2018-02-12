@@ -2,9 +2,11 @@ package config
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"net/url"
+	"os"
 	"time"
 
 	"github.com/ghodss/yaml"
@@ -23,6 +25,7 @@ type Config struct {
 	PollerStream   *StreamConfig      `json:"poller_stream"`
 	ReceiverStream *StreamConfig      `json:"receiver_stream"`
 	PushGateway    *PushGatewayConfig `json:"push_gateway"`
+	Management     *ManagementConfig  `json:"management"`
 }
 
 // Job holds a specific job with many targets
@@ -46,6 +49,12 @@ type StreamConfig struct {
 
 type PushGatewayConfig struct {
 	URL string `json:"url"`
+}
+
+type ManagementConfig struct {
+	Brokers    []string `json:"brokers"`
+	Identity   string   `json:"identity"`
+	Collective string   `json:"collective"`
 }
 
 // NewConfig parses a config file into a Config
@@ -77,6 +86,23 @@ func (cfg *Config) prepare() error {
 	_, err := time.ParseDuration(cfg.Interval)
 	if err != nil {
 		return err
+	}
+
+	if cfg.Management != nil {
+		if len(cfg.Management.Brokers) == 0 {
+			return errors.New("No Choria broker specified, cannot configure management")
+		}
+
+		if cfg.Management.Collective == "" {
+			cfg.Management.Collective = "prometheus"
+		}
+
+		if cfg.Management.Identity == "" {
+			cfg.Management.Identity, err = os.Hostname()
+			if err != nil {
+				return err
+			}
+		}
 	}
 
 	for _, job := range cfg.Jobs {
