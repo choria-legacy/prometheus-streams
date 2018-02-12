@@ -1,0 +1,16 @@
+package: github.com/ripienaar/prometheus-streams
+import:
+- package: github.com/choria-io/stream-replicator
+  subpackages:
+  - backoff
+- package: github.com/nats-io/go-nats
+- package: github.com/nats-io/go-nats-streaming
+- package: github.com/prometheus/prometheus
+  subpackages:
+  - pkg/labels
+  - storage
+- package: github.com/sirupsen/logrus
+- package: github.com/ghodss/yaml
+- package: github.com/satori/go.uuid
+- package: gopkg.in/alecthomas/kingpin.v2
+  version: ^2.2.6

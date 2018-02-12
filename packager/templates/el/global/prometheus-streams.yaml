@@ -1,0 +1,41 @@
+---
+verbose: true
+debug: false
+logfile: /var/log/prometheus-streams.log
+
+# scrape every minute
+scrape_interval: 60s
+
+# the receiver will just delete scrapes thats older than 80 seconds
+max_age: 80
+
+# the poller will publish into this NATS Stream
+poller_stream:
+  cluster_id: dc1_stream
+  urls: nats://nats.dc1.example.net:4222
+  topic: prometheus
+
+# the receiver will read here, the client_id has to be unique
+receiver_stream:
+  client_id: prometheus_receiver
+  cluster_id: global_stream
+  urls: nats://nats.dc2.example.net:4222
+  topic: prometheus
+
+# the receiver will push to this Push Gateway
+push_gateway:
+  url: http://prometheus.dc2.example.net:9091
+
+# This is what gets polled
+jobs:
+  # a choria job, this maps into the push gateway URL
+  choria:
+      # with many instances, each instance gets a label matching it's name
+      # else the name match the host:port of the url like prometheus would
+      targets:
+        - name: choria1
+          url: http://choria1.dc1.example.net:8222/choria/prometheus
+        - name: choria2
+          url: http://choria2.dc1.example.net:8222/choria/prometheus
+        - name: choria3
+          url: http://choria3.dc1.example.net:8222/choria/prometheus

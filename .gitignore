@@ -1,6 +1,6 @@
 vendor
 *.swp
 prometheus-streams
-*yaml
 .DS_Store
 prometheus-streams-*
+scrape.yaml
