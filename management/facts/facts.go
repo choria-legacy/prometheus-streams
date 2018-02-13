@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/choria-io/go-choria/choria"
+	"github.com/choria-io/prometheus-streams/build"
 	"github.com/choria-io/prometheus-streams/config"
 	"github.com/choria-io/prometheus-streams/receiver"
 	"github.com/choria-io/prometheus-streams/scrape"
@@ -31,6 +32,7 @@ type FactData struct {
 	Paused   bool            `json:"paused"`
 	Mode     string          `json:"mode"`
 	Jobs     string          `json:"jobs"`
+	Version  string          `json:"version"`
 }
 
 func Configure(c *config.Config) {
@@ -85,6 +87,7 @@ func data() json.RawMessage {
 		Config:   json.RawMessage(j),
 		Mode:     Mode(),
 		Paused:   Paused(),
+		Version:  build.Version,
 	}
 
 	j, _ = json.Marshal(f)
