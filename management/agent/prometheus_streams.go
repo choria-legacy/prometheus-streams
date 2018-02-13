@@ -17,8 +17,9 @@ import (
 )
 
 type infoReply struct {
-	Mode   string `json:"mode"`
-	Paused bool   `json:"paused"`
+	Version string `json:"version"`
+	Mode    string `json:"mode"`
+	Paused  bool   `json:"paused"`
 }
 
 func Register(ctx context.Context, fw *choria.Framework, cserver *server.Instance) error {
@@ -62,8 +63,9 @@ func infoAction(ctx context.Context, req *mcorpc.Request, reply *mcorpc.Reply, a
 
 func getInfo() *infoReply {
 	r := infoReply{
-		Mode:   facts.Mode(),
-		Paused: facts.Paused(),
+		Version: build.Version,
+		Mode:    facts.Mode(),
+		Paused:  facts.Paused(),
 	}
 
 	return &r
