@@ -184,6 +184,10 @@ sslcacert=/etc/pki/tls/certs/ca-bundle.crt
 metadata_expire=300
 ```
 
+## Puppet Module
+
+A Puppet module to install and manage the Stream Replicator can be found on the Puppet Forge as `choria/prometheus_streams`
+
 ## Thanks
 
 <img src="https://packagecloud.io/images/packagecloud-badge.png" width="158">

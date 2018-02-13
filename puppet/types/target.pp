@@ -1,4 +1,4 @@
 type Prometheus_streams::Target = Struct[{
-    name => String,
+    name => Optional[String],
     url => String
 }]
