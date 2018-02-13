@@ -17,13 +17,15 @@ task :build do
   sha = `git rev-parse --short HEAD`.chomp
   build = ENV["BUILD"] || "foss"
   packages = (ENV["PACKAGES"] || "").split(",")
-  packages = ["el7_64", "el6_64", "el6_32"] if packages.empty?
+  packages = ["el7_64", "el6_64", "el6_32", "puppet"] if packages.empty?
 
   source = "/go/src/github.com/ripienaar/prometheus-streams"
 
   packages.each do |pkg|
     if pkg =~ /^(.+?)_(.+)$/
       builder = "choria/packager:%s-go9.2" % $1
+    elsif pkg == "puppet"
+      builder = "choria/packager:el7-go9.2-puppet"
     else
       builder = "choria/packager:el7-go9.2"
     end

@@ -58,13 +58,13 @@ rm -rf %{buildroot}
 /sbin/chkconfig --add %{pkgname}-receiver || :
 
 %postun
-if [ "$1" -ge 1 ]; then
+if [ "$1" -ge "1" ]; then
   /sbin/service %{pkgname}-poller condrestart &>/dev/null || :
   /sbin/service %{pkgname}-receiver condrestart &>/dev/null || :
 fi
 
 %preun
-if [ "$1" = 0 ] ; then
+if [ "$1" = "0" ] ; then
   /sbin/service %{pkgname}-poller stop > /dev/null 2>&1
   /sbin/chkconfig --del %{pkgname}-poller || :
   /sbin/service %{pkgname}-receiver stop > /dev/null 2>&1

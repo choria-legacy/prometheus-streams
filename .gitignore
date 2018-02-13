@@ -4,3 +4,4 @@ prometheus-streams
 .DS_Store
 prometheus-streams-*
 scrape.yaml
+choria-prometheus_streams*
