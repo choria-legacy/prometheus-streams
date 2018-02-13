@@ -3,8 +3,10 @@ package facts
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"os"
+	"strings"
 	"sync"
 	"time"
 
@@ -13,19 +15,22 @@ import (
 	"github.com/choria-io/prometheus-streams/receiver"
 	"github.com/choria-io/prometheus-streams/scrape"
 	"github.com/sirupsen/logrus"
+	"github.com/tidwall/sjson"
 )
 
 var f *os.File
 var cconf *choria.Config
 var sconf *config.Config
 var err error
+var mu = &sync.Mutex{}
 
 type FactData struct {
-	Identity       string          `json:"identity"`
-	Time           int64           `json:"time"`
-	Config         json.RawMessage `json:"config"`
-	PollerPaused   bool            `json:"poller_paused"`
-	ReceiverPaused bool            `json:"receiver_paused"`
+	Identity string          `json:"identity"`
+	Time     int64           `json:"time"`
+	Config   json.RawMessage `json:"config"`
+	Paused   bool            `json:"paused"`
+	Mode     string          `json:"mode"`
+	Jobs     string          `json:"jobs"`
 }
 
 func Configure(c *config.Config) {
@@ -50,7 +55,7 @@ func Expose(ctx context.Context, wg *sync.WaitGroup, cfg *choria.Config) {
 	cfg.FactSourceFile = f.Name()
 
 	writer := func() {
-		err := write()
+		err := Write()
 		if err != nil {
 			logrus.Warnf("Could not write fact data: %s", err)
 		}
@@ -62,7 +67,7 @@ func Expose(ctx context.Context, wg *sync.WaitGroup, cfg *choria.Config) {
 
 	for {
 		select {
-		case <-time.Tick(time.Duration(60) * time.Second):
+		case <-time.Tick(time.Duration(600) * time.Second):
 			writer()
 		case <-ctx.Done():
 			return
@@ -71,19 +76,40 @@ func Expose(ctx context.Context, wg *sync.WaitGroup, cfg *choria.Config) {
 }
 
 // Data returns current set of Factdata
-func Data() FactData {
+func data() json.RawMessage {
 	j, _ := json.Marshal(sconf)
 
-	return FactData{
-		Identity:       sconf.Management.Identity,
-		Time:           time.Now().UTC().Unix(),
-		Config:         json.RawMessage(j),
-		PollerPaused:   scrape.Paused(),
-		ReceiverPaused: receiver.Paused(),
+	f := FactData{
+		Identity: sconf.Management.Identity,
+		Time:     time.Now().UTC().Unix(),
+		Config:   json.RawMessage(j),
+		Mode:     Mode(),
+		Paused:   Paused(),
 	}
+
+	j, _ = json.Marshal(f)
+	j, _ = sjson.SetBytes(j, fmt.Sprintf("%s_mode", Mode()), true)
+
+	if scrape.Running() {
+		jobs := []string{}
+		for job := range sconf.Jobs {
+			jobs = append(jobs, job)
+		}
+
+		j, _ = sjson.SetBytes(j, "jobs", strings.Join(jobs, ","))
+
+		for _, job := range jobs {
+			j, _ = sjson.SetBytes(j, fmt.Sprintf("%s_job", job), true)
+		}
+	}
+
+	return json.RawMessage(j)
 }
 
-func write() error {
+func Write() error {
+	mu.Lock()
+	defer mu.Unlock()
+
 	tf, err := ioutil.TempFile("", "")
 	if err != nil {
 		return err
@@ -92,12 +118,7 @@ func write() error {
 
 	tf.Close()
 
-	j, err := json.Marshal(Data())
-	if err != nil {
-		return err
-	}
-
-	err = ioutil.WriteFile(tf.Name(), j, 0644)
+	err = ioutil.WriteFile(tf.Name(), data(), 0644)
 	if err != nil {
 		return err
 	}
@@ -108,4 +129,28 @@ func write() error {
 	}
 
 	return nil
+}
+
+func Mode() string {
+	if scrape.Running() {
+		return "poller"
+	}
+
+	if receiver.Running() {
+		return "receiver"
+	}
+
+	return "unknown"
+}
+
+func Paused() bool {
+	if scrape.Running() {
+		return scrape.Paused()
+	}
+
+	if receiver.Running() {
+		return receiver.Paused()
+	}
+
+	return false
 }

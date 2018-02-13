@@ -1,5 +1,5 @@
-hash: 354fe53a52f61f17446f312d8b110c5a44f62cef6b1ce89cfeb4d222705d9fdf
-updated: 2018-02-12T15:32:45.371541+01:00
+hash: c9e3fbddac4a20f59c46e56c1eea276e6c3c0e20afe1d5e8bb77b9dc93a66903
+updated: 2018-02-12T18:47:50.424986+01:00
 imports:
 - name: github.com/alecthomas/template
   version: a0175ee3bccc567396460bf5acd36800cb10c49c
@@ -14,9 +14,25 @@ imports:
 - name: github.com/choria-io/go-choria
   version: 294656073efe1103bcd8e30d1156347d2177e184
   subpackages:
+  - agents/choriautil
+  - agents/discovery
+  - agents/provision
+  - agents/rpcutil
   - backoff
   - build
   - choria
+  - mcorpc
+  - mcorpc/audit
+  - registration
+  - server
+  - server/agents
+  - server/data
+  - server/discovery
+  - server/discovery/agents
+  - server/discovery/classes
+  - server/discovery/facts
+  - server/discovery/identity
+  - server/registration
   - srvcache
 - name: github.com/choria-io/go-protocol
   version: 72bc3ca9593e692e55a3f5dda61194803f54d619
@@ -88,6 +104,8 @@ imports:
   version: 87033efcaec6215741137e8ca61952c53ef2685d
 - name: github.com/tidwall/match
   version: 1731857f09b1f38450e2c12409748407822dc6be
+- name: github.com/tidwall/sjson
+  version: 6a22caf2fd45d5e2119bfc3717e984f15a7eb7ee
 - name: github.com/xeipuuv/gojsonpointer
   version: 6fe8760cad3569743d51ddbb243b26f8456742dc
 - name: github.com/xeipuuv/gojsonreference

@@ -18,3 +18,5 @@ import:
   version: ^0.0.6
 - package: github.com/choria-io/go-validator
   version: ^1.0.2
+- package: github.com/tidwall/sjson
+  version: ^1.0.0

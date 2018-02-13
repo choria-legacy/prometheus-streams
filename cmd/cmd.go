@@ -62,16 +62,16 @@ func Run() {
 
 	go interrupWatcher(cancel)
 
-	err = configureManagement()
-	if err != nil {
-		kingpin.Fatalf("Could not configure management: %s", err)
-	}
-
 	switch cmd {
 	case p.FullCommand():
 		poll()
 	case r.FullCommand():
 		receive()
+	}
+
+	err = configureManagement()
+	if err != nil {
+		kingpin.Fatalf("Could not configure management: %s", err)
 	}
 
 	wg.Wait()
