@@ -91,6 +91,20 @@ jobs:
     steps:
       *std_build_steps
 
+  build_puppet_module:
+    docker:
+      - image: circleci/golang:1.9
+
+    working_directory: /go/src/github.com/choria-io/prometheus-streams
+
+    environment:
+      - PACKAGE: puppet
+      - BUILD: foss
+      - BUILDER: choria/packager:el7-go9.2-puppet
+
+    steps:
+      *std_build_steps
+
   gather_artifacts:
     docker:
       - image: circleci/golang:1.9
@@ -141,11 +155,18 @@ workflows:
           requires:
            - hold
 
+      - build_puppet_module:
+          filters:
+            *semver_only
+          requires:
+           - hold
+
       - gather_artifacts:
           requires:
              - build_el6_32bit_rpms
              - build_el6_64bit_rpms
              - build_el7_64bit_rpms
+             - build_puppet_module
 
           filters:
             *semver_only

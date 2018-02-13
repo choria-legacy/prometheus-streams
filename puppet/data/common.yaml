@@ -1,0 +1,20 @@
+lookup_options:
+  prometheus_streams::poller_stream:
+    merge:
+      strategy: "deep"
+
+  prometheus_streams::receiver_stream:
+    merge:
+      strategy: "deep"
+
+  prometheus_streams::push_gateway:
+    merge:
+      strategy: "deep"
+
+  prometheus_streams::management:
+    merge:
+      strategy: "deep"
+
+  prometheus_streams::jobs:
+    merge:
+      strategy: "deep"
