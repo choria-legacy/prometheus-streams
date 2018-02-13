@@ -2,8 +2,10 @@ package agent
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/choria-io/prometheus-streams/build"
+	"github.com/choria-io/prometheus-streams/management/facts"
 	"github.com/choria-io/prometheus-streams/receiver"
 	"github.com/choria-io/prometheus-streams/scrape"
 
@@ -46,6 +48,12 @@ func switchAction(ctx context.Context, req *mcorpc.Request, reply *mcorpc.Reply,
 	scrape.FlipCircuitBreaker()
 
 	infoAction(ctx, req, reply, agent, conn)
+
+	err := facts.Write()
+	if err != nil {
+		reply.Statuscode = mcorpc.Aborted
+		reply.Statusmsg = fmt.Sprintf("Could not update facts: %s", err)
+	}
 }
 
 func infoAction(ctx context.Context, req *mcorpc.Request, reply *mcorpc.Reply, agent *mcorpc.Agent, conn choria.ConnectorInfo) {
@@ -54,17 +62,8 @@ func infoAction(ctx context.Context, req *mcorpc.Request, reply *mcorpc.Reply, a
 
 func getInfo() *infoReply {
 	r := infoReply{
-		Mode: "initial_connection",
-	}
-
-	if scrape.Running() {
-		r.Mode = "poller"
-		r.Paused = scrape.Paused()
-	}
-
-	if receiver.Running() {
-		r.Mode = "receiver"
-		r.Paused = receiver.Paused()
+		Mode:   facts.Mode(),
+		Paused: facts.Paused(),
 	}
 
 	return &r

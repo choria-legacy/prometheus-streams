@@ -26,6 +26,7 @@ var running bool
 func Run(ctx context.Context, wg *sync.WaitGroup, scrapeCfg *config.Config) {
 	defer wg.Done()
 
+	running = true
 	cfg = scrapeCfg
 
 	stream := connection.NewConnection(ctx, scrapeCfg.PollerStream)
@@ -34,8 +35,6 @@ func Run(ctx context.Context, wg *sync.WaitGroup, scrapeCfg *config.Config) {
 		wg.Add(1)
 		go jobWorker(ctx, wg, name, job)
 	}
-
-	running = true
 
 	for {
 		select {

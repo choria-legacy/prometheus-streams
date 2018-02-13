@@ -28,6 +28,7 @@ var running bool
 func Run(ctx context.Context, wg *sync.WaitGroup, cfg *config.Config) {
 	defer wg.Done()
 
+	running = true
 	maxAge = cfg.MaxAge
 
 	conn := connection.NewConnection(ctx, cfg.ReceiverStream)
@@ -45,8 +46,6 @@ func Run(ctx context.Context, wg *sync.WaitGroup, cfg *config.Config) {
 	}
 
 	conn.Conn.Subscribe(cfg.ReceiverStream.Topic, handler, opts...)
-
-	running = true
 
 	go poster(cfg.PushGateway.URL)
 
@@ -95,7 +94,10 @@ func poster(url string) {
 
 			resp, err := client.Post(target, "text/plain", strings.NewReader(string(body)))
 			if err != nil {
-				resp.Body.Close()
+				if resp != nil && resp.Body != nil {
+					resp.Body.Close()
+				}
+
 				log.Errorf("Posting to %s failed: %s", target, err)
 				continue
 			}
