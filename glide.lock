@@ -1,5 +1,5 @@
-hash: c9e3fbddac4a20f59c46e56c1eea276e6c3c0e20afe1d5e8bb77b9dc93a66903
-updated: 2018-02-12T18:47:50.424986+01:00
+hash: 3814f054f2f266c09ab0eb0f3553a3ab31e1da385b21474611fd42668eeac175
+updated: 2018-02-14T16:07:57.600696+01:00
 imports:
 - name: github.com/alecthomas/template
   version: a0175ee3bccc567396460bf5acd36800cb10c49c
@@ -76,7 +76,6 @@ imports:
   version: 967789050ba94deca04a5e84cce8ad472ce313c1
   subpackages:
   - prometheus
-  - prometheus/promhttp
 - name: github.com/prometheus/client_model
   version: 99fa1f4be8e564e8a6b613da7fa6f46c9edafc6c
   subpackages:

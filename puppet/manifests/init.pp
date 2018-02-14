@@ -25,6 +25,7 @@
 # @param verbose Enables verbose logging
 # @param scrape_interval Interval to scrape targets
 # @param max_age Maximum age of metrics the receiver will accept
+# @param monitor_port When set enables prometheus metrics on this port
 # @param poller_stream Stream to publish metrics to
 # @param receiver_stream Stream to read metrics from
 # @param push_gateway Push Gateway the Receiver will publish metrics to
@@ -44,6 +45,7 @@ class prometheus_streams (
     Boolean $verbose = false,
     Pattern[/^\d+(m|h|s)$/] $scrape_interval = "30s",
     Integer $max_age = 65,
+    Integer $monitor_port = 0,
     Prometheus_streams::Stream $poller_stream = {},
     Prometheus_streams::Stream $receiver_stream = {},
     Prometheus_streams::Push_gateway $push_gateway = {},

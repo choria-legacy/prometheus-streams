@@ -85,6 +85,9 @@ scrape_interval: 60s
 # the receiver will just delete scrapes thats older than 80 seconds
 max_age: 80
 
+# sets up a prometheus stats listener for /metrics on port 1000
+monitor_port: 10000
+
 # the poller will publish into this NATS Stream
 poller_stream:
   cluster_id: dc1_stream
@@ -127,6 +130,13 @@ jobs:
 I set my Stream to keep 10 minutes of data only for this data everywhere.
 
 Configure Prometheus to consume data from the Push Gateway - here http://prometheus.dc2.example.net:9091/metrics.
+
+Own Metrics
+-----------
+
+When `monitor_port` is set to a value greater than 0 this process will listen for Prometheus requests on `/metrics` on that port.
+
+It will also add itself as a scrape job called `prometheus_streams` and set up a matching target so you do not need to set up a scrape for itself when metrics are enabled.
 
 Management
 ----------

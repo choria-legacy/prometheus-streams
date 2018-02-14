@@ -7,6 +7,7 @@ import (
 
 	"github.com/choria-io/prometheus-streams/config"
 	"github.com/choria-io/prometheus-streams/connection"
+	"github.com/prometheus/client_golang/prometheus"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -22,6 +23,7 @@ type Scrape struct {
 var outbox = make(chan Scrape, 1000)
 var paused bool
 var running bool
+var stream *connection.Connection
 
 func Run(ctx context.Context, wg *sync.WaitGroup, scrapeCfg *config.Config) {
 	defer wg.Done()
@@ -29,7 +31,10 @@ func Run(ctx context.Context, wg *sync.WaitGroup, scrapeCfg *config.Config) {
 	running = true
 	cfg = scrapeCfg
 
-	stream := connection.NewConnection(ctx, scrapeCfg.PollerStream)
+	stream = connection.NewConnection(ctx, scrapeCfg.PollerStream)
+
+	jobsGauge.Set(float64(len(cfg.Jobs)))
+	pauseGauge.Set(0)
 
 	for name, job := range cfg.Jobs {
 		wg.Add(1)
@@ -39,19 +44,34 @@ func Run(ctx context.Context, wg *sync.WaitGroup, scrapeCfg *config.Config) {
 	for {
 		select {
 		case m := <-outbox:
-			j, err := json.Marshal(m)
-			if err != nil {
-				log.Errorf("Could not publish data: %s", err)
-				continue
-			}
-
-			stream.Publish(cfg.PollerStream.Topic, j)
-			log.Debugf("Published %d bytes to %s", len(j), "prometheus")
-
+			publish(m)
 		case <-ctx.Done():
 			return
 		}
 	}
+}
+
+func publish(m Scrape) {
+	obs := prometheus.NewTimer(publishTime)
+	defer obs.ObserveDuration()
+
+	j, err := json.Marshal(m)
+	if err != nil {
+		log.Errorf("Could not publish data: %s", err)
+		errorCtr.Inc()
+		return
+	}
+
+	err = stream.Publish(cfg.PollerStream.Topic, j)
+	if err != nil {
+		log.Errorf("Could not publish data: %s", err)
+		errorCtr.Inc()
+		return
+	}
+
+	publishedCtr.Inc()
+
+	log.Debugf("Published %d bytes to %s", len(j), "prometheus")
 }
 
 func Paused() bool {
@@ -60,6 +80,12 @@ func Paused() bool {
 
 func FlipCircuitBreaker() bool {
 	paused = !paused
+
+	if paused {
+		pauseGauge.Set(1)
+	} else {
+		pauseGauge.Set(0)
+	}
 
 	if running {
 		log.Warnf("Switching the circuit breaker: paused: %t", paused)
