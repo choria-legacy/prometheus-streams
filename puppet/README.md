@@ -27,37 +27,37 @@ metadata_expire=300
 
 ```puppet
 class{"prometheus_streams":
-    poller => true,
-    receiver => true,
-    poller_stream => {
-        cluster_id => "dc1_stream",
-        urls => "nats://nats.dc1.example.net:4222",
-        topic => "prometheus"
-    },
-    receiver_stream => {
-        client_id => "prometheus_receiver",
-        cluster_id => "global_stream",
-        urls => "nats://nats.dc2.example.net:4222",
-        topic => "prometheus"
-    },
-    push_gateway => {
-        url => "http://prometheus.dc2.example.net:9091"
-    },
-    management => {
-        identity => "prom.example.net",
-        collective => "prometheus",
-        brokers => ["choria.example.net:4222"]
-    },
-    jobs => {
-        "choria" => {
-            "targets" => [
-                {
-                    "name" => "choria1",
-                    "url"=> "http://choria1.dc1.example.net:8222/choria/prometheus"
-                }
-            ]
+  poller => true,
+  receiver => true,
+  poller_stream => {
+    cluster_id => "dc1_stream",
+    urls => "nats://nats.dc1.example.net:4222",
+    topic => "prometheus"
+  },
+  receiver_stream => {
+    client_id => "prometheus_receiver",
+    cluster_id => "global_stream",
+    urls => "nats://nats.dc2.example.net:4222",
+    topic => "prometheus"
+  },
+  push_gateway => {
+    url => "http://prometheus.dc2.example.net:9091"
+  },
+  management => {
+    identity => "prom.example.net",
+    collective => "prometheus",
+    brokers => ["choria.example.net:4222"]
+  },
+  jobs => {
+    "choria" => {
+      "targets" => [
+        {
+          "name" => "choria1",
+          "url"=> "http://choria1.dc1.example.net:8222/choria/prometheus"
         }
+      ]
     }
+  }
 }
 ```
 

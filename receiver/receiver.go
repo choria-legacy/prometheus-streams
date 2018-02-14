@@ -14,6 +14,7 @@ import (
 
 	"github.com/choria-io/prometheus-streams/connection"
 	"github.com/choria-io/prometheus-streams/scrape"
+	"github.com/prometheus/client_golang/prometheus"
 	log "github.com/sirupsen/logrus"
 
 	"github.com/choria-io/prometheus-streams/config"
@@ -66,6 +67,12 @@ func Paused() bool {
 func FlipCircuitBreaker() bool {
 	paused = !paused
 
+	if paused {
+		pauseGauge.Set(1)
+	} else {
+		pauseGauge.Set(0)
+	}
+
 	if running {
 		log.Warnf("Switching the circuit breaker: paused: %t", paused)
 	}
@@ -81,42 +88,54 @@ func poster(url string) {
 
 	client := &http.Client{Transport: tr}
 
+	publisher := func(sc scrape.Scrape) {
+		obs := prometheus.NewTimer(publishTime)
+		defer obs.ObserveDuration()
+
+		target := fmt.Sprintf("%s/metrics/job/%s/instance/%s", url, sc.Job, sc.Instance)
+
+		body, err := uncompress(sc.Scrape)
+		if err != nil {
+			log.Errorf("Could not uncompress scrape: %s", err)
+			errorCtr.WithLabelValues(sc.Job).Inc()
+			return
+		}
+
+		resp, err := client.Post(target, "text/plain", strings.NewReader(string(body)))
+		if err != nil {
+			if resp != nil && resp.Body != nil {
+				resp.Body.Close()
+			}
+
+			log.Errorf("Posting to %s failed: %s", target, err)
+			errorCtr.WithLabelValues(sc.Job).Inc()
+			return
+		}
+
+		if resp.StatusCode != 202 {
+			log.Errorf("Posting to %s failed: %s: %s", target, resp.Status, resp.Body)
+			resp.Body.Close()
+			errorCtr.WithLabelValues(sc.Job).Inc()
+			return
+		}
+
+		resp.Body.Close()
+
+		log.Infof("Posted %d to %s: %s", len(body), target, resp.Status)
+	}
+
 	for {
 		select {
 		case sc := <-inbox:
-			target := fmt.Sprintf("%s/metrics/job/%s/instance/%s", url, sc.Job, sc.Instance)
-
-			body, err := uncompress(sc.Scrape)
-			if err != nil {
-				log.Errorf("Could not uncompress scrape: %s", err)
-				continue
-			}
-
-			resp, err := client.Post(target, "text/plain", strings.NewReader(string(body)))
-			if err != nil {
-				if resp != nil && resp.Body != nil {
-					resp.Body.Close()
-				}
-
-				log.Errorf("Posting to %s failed: %s", target, err)
-				continue
-			}
-
-			if resp.StatusCode != 202 {
-				log.Errorf("Posting to %s failed: %s: %s", target, resp.Status, resp.Body)
-				resp.Body.Close()
-				continue
-			}
-
-			resp.Body.Close()
-
-			log.Infof("Posted %d to %s: %s", len(body), target, resp.Status)
+			publisher(sc)
 		}
 	}
 }
 
 func handler(msg *stan.Msg) {
 	defer msg.Ack()
+
+	msgCtr.Inc()
 
 	if paused {
 		return
@@ -127,6 +146,7 @@ func handler(msg *stan.Msg) {
 	err := json.Unmarshal(msg.Data, &s)
 	if err != nil {
 		log.Errorf("handling failed: %s", err)
+		errorCtr.WithLabelValues("unknown").Inc()
 		return
 	}
 
@@ -135,14 +155,20 @@ func handler(msg *stan.Msg) {
 
 		if age > maxAge {
 			log.Warnf("Found %ds old metric for %s discarding due to maxage of %d", age, s.Instance, maxAge)
+			agedCtr.WithLabelValues(s.Job).Inc()
 			return
 		}
 	}
+
+	instanceSeenTime.WithLabelValues(s.Job, s.Instance).Set(float64(time.Now().UTC().Unix()))
 
 	inbox <- s
 }
 
 func uncompress(data []byte) ([]byte, error) {
+	obs := prometheus.NewTimer(decompressTime)
+	defer obs.ObserveDuration()
+
 	b := bytes.NewBuffer(data)
 
 	r, err := gzip.NewReader(b)

@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"io/ioutil"
+	"net/http"
 	"os"
 	"os/signal"
 	"sync"
@@ -14,6 +15,7 @@ import (
 	"github.com/choria-io/prometheus-streams/management"
 	"github.com/choria-io/prometheus-streams/receiver"
 	"github.com/choria-io/prometheus-streams/scrape"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	log "github.com/sirupsen/logrus"
 	kingpin "gopkg.in/alecthomas/kingpin.v2"
 )
@@ -61,6 +63,10 @@ func Run() {
 	defer cancel()
 
 	go interrupWatcher(cancel)
+
+	if cfg.MonitorPort > 0 {
+		go setupPrometheus(cfg.MonitorPort)
+	}
 
 	switch cmd {
 	case p.FullCommand():
@@ -152,4 +158,10 @@ func writePID(pidfile string) {
 		kingpin.Fatalf("Could not write PID: %s", err)
 		os.Exit(1)
 	}
+}
+
+func setupPrometheus(port int64) {
+	log.Infof("Listening for /metrics on %d", port)
+	http.Handle("/metrics", promhttp.Handler())
+	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%d", port), nil))
 }

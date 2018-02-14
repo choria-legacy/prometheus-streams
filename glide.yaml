@@ -20,3 +20,5 @@ import:
   version: ^1.0.2
 - package: github.com/tidwall/sjson
   version: ^1.0.0
+- package: github.com/prometheus/client_golang
+  version: ^0.9.0-pre1

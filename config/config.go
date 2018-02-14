@@ -18,8 +18,9 @@ type Config struct {
 	Debug   bool   `json:"debug"`
 	LogFile string `json:"logfile"`
 
-	Interval string `json:"scrape_interval"`
-	MaxAge   int64  `json:"max_age"`
+	Interval    string `json:"scrape_interval"`
+	MaxAge      int64  `json:"max_age"`
+	MonitorPort int64  `json:"monitor_port"`
 
 	Jobs           map[string]*Job
 	PollerStream   *StreamConfig      `json:"poller_stream"`
@@ -47,10 +48,12 @@ type StreamConfig struct {
 	Topic     string `json:"topic"`
 }
 
+// PushGatewayConfig where the receiver will publish metrics to
 type PushGatewayConfig struct {
 	URL string `json:"url"`
 }
 
+// ManagementConfig configuration for the embedded Choria instance
 type ManagementConfig struct {
 	Brokers    []string `json:"brokers"`
 	Identity   string   `json:"identity"`
@@ -86,6 +89,18 @@ func (cfg *Config) prepare() error {
 	_, err := time.ParseDuration(cfg.Interval)
 	if err != nil {
 		return err
+	}
+
+	if cfg.MonitorPort > 0 {
+		t := []*Target{}
+		t = append(t, &Target{
+			Name: "prometheus_streams",
+			URL:  fmt.Sprintf("http://localhost:%d/metrics", cfg.MonitorPort),
+		})
+
+		cfg.Jobs["prometheus_streams"] = &Job{
+			Targets: t,
+		}
 	}
 
 	if cfg.Management != nil {
