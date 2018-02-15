@@ -101,7 +101,7 @@ func (cfg *Config) prepare() error {
 	if cfg.MonitorPort > 0 {
 		t := []*Target{}
 		t = append(t, &Target{
-			Name: "prometheus_streams",
+			Name: cfg.Hostname,
 			URL:  fmt.Sprintf("http://localhost:%d/metrics", cfg.MonitorPort),
 		})
 
