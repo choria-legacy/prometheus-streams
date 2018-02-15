@@ -121,7 +121,7 @@ func poster(url string) {
 
 		resp.Body.Close()
 
-		log.Infof("Posted %d to %s: %s", len(body), target, resp.Status)
+		log.Debugf("Posted %d to %s: %s", len(body), target, resp.Status)
 	}
 
 	for {
