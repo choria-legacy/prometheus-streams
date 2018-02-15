@@ -17,6 +17,7 @@ type Scrape struct {
 	Job       string `json:"job"`
 	Instance  string `json:"instance"`
 	Timestamp int64  `json:"time"`
+	Publisher string `json:"publisher"`
 	Scrape    []byte
 }
 
@@ -24,6 +25,7 @@ var outbox = make(chan Scrape, 1000)
 var paused bool
 var running bool
 var stream *connection.Connection
+var hostname string
 
 func Run(ctx context.Context, wg *sync.WaitGroup, scrapeCfg *config.Config) {
 	defer wg.Done()

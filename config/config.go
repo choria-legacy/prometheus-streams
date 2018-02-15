@@ -27,6 +27,8 @@ type Config struct {
 	ReceiverStream *StreamConfig      `json:"receiver_stream"`
 	PushGateway    *PushGatewayConfig `json:"push_gateway"`
 	Management     *ManagementConfig  `json:"management"`
+
+	Hostname string
 }
 
 // Job holds a specific job with many targets
@@ -78,6 +80,11 @@ func NewConfig(file string) (*Config, error) {
 		return nil, err
 	}
 
+	cfg.Hostname, err = os.Hostname()
+	if err != nil {
+		return nil, err
+	}
+
 	err = cfg.prepare()
 
 	return cfg, err
@@ -113,10 +120,7 @@ func (cfg *Config) prepare() error {
 		}
 
 		if cfg.Management.Identity == "" {
-			cfg.Management.Identity, err = os.Hostname()
-			if err != nil {
-				return err
-			}
+			cfg.Management.Identity = cfg.Hostname
 		}
 	}
 
