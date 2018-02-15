@@ -38,7 +38,7 @@ var (
 	instanceSeenTime = prometheus.NewGaugeVec(prometheus.GaugeOpts{
 		Name: "prometheus_streams_receiver_seen_time",
 		Help: "When last data for a specific job and instance was received",
-	}, []string{"receiver_job", "receiver_instance", "poller"})
+	}, []string{"poller"})
 )
 
 func init() {

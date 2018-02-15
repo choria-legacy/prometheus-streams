@@ -160,7 +160,7 @@ func handler(msg *stan.Msg) {
 		}
 	}
 
-	instanceSeenTime.WithLabelValues(s.Job, s.Instance, s.Publisher).Set(float64(time.Now().UTC().Unix()))
+	instanceSeenTime.WithLabelValues(s.Publisher).Set(float64(time.Now().UTC().Unix()))
 
 	inbox <- s
 }
