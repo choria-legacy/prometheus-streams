@@ -91,6 +91,7 @@ func targetWorker(ctx context.Context, wg *sync.WaitGroup, jobname string, targe
 			Instance:  target.Name,
 			Timestamp: time.Now().UTC().Unix(),
 			Scrape:    cbody,
+			Publisher: cfg.Hostname,
 		}
 	}
 
