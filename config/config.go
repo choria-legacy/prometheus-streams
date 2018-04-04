@@ -28,7 +28,8 @@ type Config struct {
 	PushGateway    *PushGatewayConfig `json:"push_gateway"`
 	Management     *ManagementConfig  `json:"management"`
 
-	Hostname string
+	Hostname   string
+	ConfigFile string `json:"-"`
 }
 
 // Job holds a specific job with many targets
@@ -84,6 +85,8 @@ func NewConfig(file string) (*Config, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	cfg.ConfigFile = file
 
 	err = cfg.prepare()
 

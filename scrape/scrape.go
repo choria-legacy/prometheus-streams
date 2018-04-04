@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"sync"
 
+	"github.com/choria-io/prometheus-streams/build"
 	"github.com/choria-io/prometheus-streams/config"
 	"github.com/choria-io/prometheus-streams/connection"
 	"github.com/prometheus/client_golang/prometheus"
@@ -29,6 +30,8 @@ var hostname string
 
 func Run(ctx context.Context, wg *sync.WaitGroup, scrapeCfg *config.Config) {
 	defer wg.Done()
+
+	log.Infof("Choria Prometheus Streams Poller version %s starting with configuration file %s", build.Version, scrapeCfg.ConfigFile)
 
 	running = true
 	cfg = scrapeCfg
