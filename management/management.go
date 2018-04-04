@@ -26,6 +26,7 @@ func Configure(conf *config.Config) error {
 	cfg.Choria.MiddlewareHosts = conf.Management.Brokers
 	cfg.Collectives = []string{conf.Management.Collective}
 	cfg.MainCollective = cfg.Collectives[0]
+	cfg.Choria.UseSRVRecords = false
 
 	if conf.Verbose {
 		cfg.LogLevel = "info"
