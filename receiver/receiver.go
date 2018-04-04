@@ -12,6 +12,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/choria-io/prometheus-streams/build"
 	"github.com/choria-io/prometheus-streams/connection"
 	"github.com/choria-io/prometheus-streams/scrape"
 	"github.com/prometheus/client_golang/prometheus"
@@ -38,6 +39,8 @@ func Run(ctx context.Context, wg *sync.WaitGroup, cfg *config.Config) {
 	if conn.Conn == nil {
 		return
 	}
+
+	log.Infof("Choria Prometheus Streams Receiver version %s starting with configuration file %s", build.Version, cfg.ConfigFile)
 
 	opts := []stan.SubscriptionOption{
 		stan.DurableName(cfg.ReceiverStream.ClientID),
