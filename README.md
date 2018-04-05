@@ -92,6 +92,9 @@ receiver_stream:
 push_gateway:
   url: http://prometheus.dc2.example.net:9091
 
+  # when true labels will be added with the hostname of the publisher
+  publisher_label: true
+
 # enable a choria based management interface for circuit breaking
 management:
   identity: prom.example.net # defaults to hostname
