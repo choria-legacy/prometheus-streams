@@ -26,9 +26,9 @@ jobs:
     working_directory: /go/src/github.com/choria-io/prometheus-streams
 
     environment:
-      - PACKAGE: el6_64
-      - BUILD: foss
-      - BUILDER: choria/packager:el6-go9.2
+      PACKAGE: el6_64
+      BUILD: foss
+      BUILDER: choria/packager:el6-go9.2
 
     steps: &std_build_steps
       - setup_remote_docker
@@ -70,9 +70,9 @@ jobs:
     working_directory: /go/src/github.com/choria-io/prometheus-streams
 
     environment:
-      - PACKAGE: el6_32
-      - BUILD: foss
-      - BUILDER: choria/packager:el6-go9.2
+      PACKAGE: el6_32
+      BUILD: foss
+      BUILDER: choria/packager:el6-go9.2
 
     steps:
       *std_build_steps
@@ -84,9 +84,9 @@ jobs:
     working_directory: /go/src/github.com/choria-io/prometheus-streams
 
     environment:
-      - PACKAGE: el7_64
-      - BUILD: foss
-      - BUILDER: choria/packager:el7-go9.2
+      PACKAGE: el7_64
+      BUILD: foss
+      BUILDER: choria/packager:el7-go9.2
 
     steps:
       *std_build_steps
@@ -98,9 +98,9 @@ jobs:
     working_directory: /go/src/github.com/choria-io/prometheus-streams
 
     environment:
-      - PACKAGE: puppet
-      - BUILD: foss
-      - BUILDER: choria/packager:el7-go9.2-puppet
+      PACKAGE: puppet
+      BUILD: foss
+      BUILDER: choria/packager:el7-go9.2-puppet
 
     steps:
       *std_build_steps
@@ -118,6 +118,28 @@ jobs:
       - store_artifacts:
           path: /tmp/workspace
 
+    release_packagecloud: &packagecloud_push
+      environment:
+        - REPO: release
+
+      docker:
+        - image: circleci/ruby
+
+      steps:
+        - attach_workspace:
+            at: /tmp/workspace
+
+        - run: gem install package_cloud
+
+        - run: |
+            for d in 6 7
+            do
+              for i in $(find /tmp/workspace -name \*.el${d}.\*.rpm | grep -v src.rpm)
+              do
+                package_cloud push choria/${REPO}/el/${d} ${i}
+              done
+            done
+
 workflows:
   version: 2
   test_and_ship:
@@ -127,39 +149,32 @@ workflows:
             tags:
               only: /.+/
 
-      - hold:
-          type: approval
-          requires:
-           - test
+      - build_el6_32bit_rpms:
           filters: &semver_only
             tags:
               only: /^\d+\.\d+\.\d+$/
             branches:
               ignore: /.*/
-
-      - build_el6_32bit_rpms:
-          filters:
-            *semver_only
           requires:
-           - hold
+           - test
 
       - build_el6_64bit_rpms:
           filters:
             *semver_only
           requires:
-           - hold
+           - test
 
       - build_el7_64bit_rpms:
           filters:
             *semver_only
           requires:
-           - hold
+           - test
 
       - build_puppet_module:
           filters:
             *semver_only
           requires:
-           - hold
+           - test
 
       - gather_artifacts:
           requires:
@@ -168,5 +183,18 @@ workflows:
              - build_el7_64bit_rpms
              - build_puppet_module
 
+          filters:
+            *semver_only
+
+      - release_hold:
+          type: approval
+          requires:
+            - gather_artifacts
+          filters:
+            *semver_only
+
+      - release_packagecloud:
+          requires:
+            - release_hold
           filters:
             *semver_only
