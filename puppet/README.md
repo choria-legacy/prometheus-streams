@@ -41,7 +41,8 @@ class{"prometheus_streams":
     topic => "prometheus"
   },
   push_gateway => {
-    url => "http://prometheus.dc2.example.net:9091"
+    url => "http://prometheus.dc2.example.net:9091",
+    publisher_label => true,
   },
   management => {
     identity => "prom.example.net",

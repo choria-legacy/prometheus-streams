@@ -51,7 +51,7 @@ func Run(ctx context.Context, wg *sync.WaitGroup, cfg *config.Config) {
 
 	conn.Conn.Subscribe(cfg.ReceiverStream.Topic, handler, opts...)
 
-	go poster(cfg.PushGateway.URL)
+	go poster(cfg)
 
 	select {
 	case <-ctx.Done():
@@ -83,7 +83,7 @@ func FlipCircuitBreaker() bool {
 	return Paused()
 }
 
-func poster(url string) {
+func poster(cfg *config.Config) {
 	tr := &http.Transport{
 		MaxIdleConns:    10,
 		IdleConnTimeout: 30 * time.Second,
@@ -95,7 +95,13 @@ func poster(url string) {
 		obs := prometheus.NewTimer(publishTime)
 		defer obs.ObserveDuration()
 
-		target := fmt.Sprintf("%s/metrics/job/%s/instance/%s", url, sc.Job, sc.Instance)
+		var target string
+
+		if cfg.PushGateway.PublisherLabel {
+			target = fmt.Sprintf("%s/metrics/job/%s/instance/%s/publisher/%s", cfg.PushGateway.URL, sc.Job, sc.Instance, sc.Publisher)
+		} else {
+			target = fmt.Sprintf("%s/metrics/job/%s/instance/%s", cfg.PushGateway.URL, sc.Job, sc.Instance)
+		}
 
 		body, err := uncompress(sc.Scrape)
 		if err != nil {

@@ -53,7 +53,8 @@ type StreamConfig struct {
 
 // PushGatewayConfig where the receiver will publish metrics to
 type PushGatewayConfig struct {
-	URL string `json:"url"`
+	URL            string `json:"url"`
+	PublisherLabel bool   `json:"publisher_label"`
 }
 
 // ManagementConfig configuration for the embedded Choria instance
