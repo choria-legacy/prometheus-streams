@@ -1,5 +1,7 @@
 |Date      |Issue |Description                                                                                              |
 |----------|------|---------------------------------------------------------------------------------------------------------|
+|2018/04/06|      |Release 0.0.7                                                                                            |
+|2018/04/05|41    |Support labeling metrics with the name of the poller                                                     |
 |2018/04/04|      |Release 0.0.6                                                                                            |
 |2018/04/04|33    |Do not use SRV records in the management agent                                                           |
 |2018/04/04|35    |Logrotation improvements                                                                                 |
