@@ -1,5 +1,7 @@
 |Date      |Issue |Description                                                                                              |
 |----------|------|---------------------------------------------------------------------------------------------------------|
+|2018/04/10|      |Release 0.1.0                                                                                            |
+|2018/04/10|45    |The publisher name can be configured using the `identity` key in configuration and Puppet                |
 |2018/04/06|      |Release 0.0.7                                                                                            |
 |2018/04/05|41    |Support labeling metrics with the name of the poller                                                     |
 |2018/04/04|      |Release 0.0.6                                                                                            |
