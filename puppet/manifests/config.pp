@@ -2,6 +2,7 @@ class prometheus_streams::config {
     $base_config = {
         "verbose" => $prometheus_streams::verbose,
         "debug" => $prometheus_streams::debug,
+        "identity" => $prometheus_streams::identity,
         "logfile" => $prometheus_streams::log_file,
         "monitor_port" => $prometheus_streams::monitor_port,
         "scrape_interval" => $prometheus_streams::scrape_interval,

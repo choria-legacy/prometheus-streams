@@ -14,6 +14,8 @@ import (
 
 // Config configures the targets to scrape
 type Config struct {
+	Hostname string `json:"identity"`
+
 	Verbose bool   `json:"verbose"`
 	Debug   bool   `json:"debug"`
 	LogFile string `json:"logfile"`
@@ -28,7 +30,6 @@ type Config struct {
 	PushGateway    *PushGatewayConfig `json:"push_gateway"`
 	Management     *ManagementConfig  `json:"management"`
 
-	Hostname   string
 	ConfigFile string `json:"-"`
 }
 
@@ -82,9 +83,11 @@ func NewConfig(file string) (*Config, error) {
 		return nil, err
 	}
 
-	cfg.Hostname, err = os.Hostname()
-	if err != nil {
-		return nil, err
+	if cfg.Hostname == "" {
+		cfg.Hostname, err = os.Hostname()
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	cfg.ConfigFile = file
@@ -124,7 +127,10 @@ func (cfg *Config) prepare() error {
 		}
 
 		if cfg.Management.Identity == "" {
-			cfg.Management.Identity = cfg.Hostname
+			cfg.Management.Identity, err = os.Hostname()
+			if err != nil {
+				return err
+			}
 		}
 	}
 

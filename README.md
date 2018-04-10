@@ -66,6 +66,10 @@ verbose: true
 debug: false
 logfile: /var/log/prometheus-streams.log
 
+# when publishing stats this will be reported as the publisher
+# defaults to the hostname reported by the operating system
+identity: USDC1
+
 # scrape every minute
 scrape_interval: 60s
 
