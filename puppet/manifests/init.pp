@@ -19,6 +19,7 @@
 #
 # @param poller Enables the poller service
 # @param receiver Enables the receiver service
+# @param identity Name to publish along with scrapes to identify the sending site
 # @param config_file Path to the configuration file
 # @param log_file Path to the log file
 # @param debug Enables debug logging
@@ -39,6 +40,7 @@
 class prometheus_streams (
     Boolean $poller = false,
     Boolean $receiver = false,
+    String $identity = $facts["networking"]["fqdn"],
     Stdlib::Absolutepath $config_file = "/etc/prometheus-streams/prometheus-streams.yaml",
     Stdlib::Absolutepath $log_file = "/var/log/prometheus-streams.log",
     Boolean $debug = false,
