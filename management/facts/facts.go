@@ -10,7 +10,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/choria-io/go-choria/choria"
+	choriaconf "github.com/choria-io/go-choria/config"
 	"github.com/choria-io/prometheus-streams/build"
 	"github.com/choria-io/prometheus-streams/config"
 	"github.com/choria-io/prometheus-streams/receiver"
@@ -20,7 +20,7 @@ import (
 )
 
 var f *os.File
-var cconf *choria.Config
+var cconf *choriaconf.Config
 var sconf *config.Config
 var err error
 var mu = &sync.Mutex{}
@@ -39,7 +39,7 @@ func Configure(c *config.Config) {
 	sconf = c
 }
 
-func Expose(ctx context.Context, wg *sync.WaitGroup, cfg *choria.Config) {
+func Expose(ctx context.Context, wg *sync.WaitGroup, cfg *choriaconf.Config) {
 	defer wg.Done()
 
 	cconf = cfg

@@ -125,6 +125,42 @@ I set my Stream to keep 10 minutes of data only for this data everywhere.
 
 Configure Prometheus to consume data from the Push Gateway - here http://prometheus.dc2.example.net:9091/metrics.
 
+TLS
+---
+
+TLS is supported on the NATS and management connections, you can configure a single TLS setup for all connections or per connection. For all connections add this to the top of the config, else you can add the exact configuration in the `management`, `receiver_stream` and `poller_stream` sections, this is handy if they have different CAs.
+
+2 modes are supported, Puppet CA compatible or full manual configuration:
+
+### Puppet
+
+In this mode a Puppet compatible SSL setup is required in a specific directory:
+
+```yaml
+tls:
+  identity: prom.example.net
+  ssl_dir: /etc/prometheus-streams/ssl
+  scheme: puppet
+```
+
+If you use this mode you can use the `prometheus-stream enroll prom.example.net --dir /etc/prometheus-streams/ssl prom.example.net` command to go through the process of obtaining a certificate for this instance from the PuppetCA, the process is identical to the `--waitforcert` mode in `puppet agent` and requires you to have a unique certificate identity.
+
+### Manual
+
+This mode is completely configurable:
+
+```yaml
+tls:
+  identity: prom.example.net
+  scheme: manual
+  ca: /path/to/ca.pem
+  cert: /path/to/cert.pem
+  key: /path/to/key.pem
+  cache: /path/to/cert_cache # required if you use the management backend
+```
+
+These `tls` stanzas can be set either at the top level as here - where it will apply to all NATS connections - or on the individual `management`, `receiver_stream` and `poller_stream` level in the event that you need different set ups for these.
+
 Own Metrics
 -----------
 
@@ -190,7 +226,7 @@ metadata_expire=300
 
 ## Puppet Module
 
-A Puppet module to install and manage the Stream Replicator can be found on the Puppet Forge as `choria/prometheus_streams`
+A Puppet module to install and manage the Stream Replicator can be found on the Puppet Forge as [choria/prometheus_streams](https://forge.puppet.com/choria/prometheus_streams)
 
 ## Thanks
 

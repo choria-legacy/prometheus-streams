@@ -2,14 +2,20 @@ package cmd
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"net/http"
 	"os"
 	"os/signal"
+	"regexp"
+	"strconv"
+	"strings"
 	"sync"
 	"syscall"
+	"time"
 
+	"github.com/choria-io/go-security/puppetsec"
 	"github.com/choria-io/prometheus-streams/build"
 	"github.com/choria-io/prometheus-streams/config"
 	"github.com/choria-io/prometheus-streams/management"
@@ -29,6 +35,10 @@ var (
 	ctx     context.Context
 	cancel  func()
 	debug   bool
+
+	enrollIdentity string
+	enrollCA       string
+	enrollDir      string
 )
 
 // Run sets up the CLI and perform the users desired actions
@@ -37,14 +47,32 @@ func Run() {
 	app.Version(build.Version)
 	app.Author("R.I.Pienaar <rip@devco.net>")
 
-	app.Flag("config", "Configuration file").Required().ExistingFileVar(&cfile)
+	app.Flag("config", "Configuration file").ExistingFileVar(&cfile)
 	app.Flag("pid", "Write running PID to a file").StringVar(&pidfile)
 	app.Flag("debug", "Force debug logging").BoolVar(&debug)
 
 	p := app.Command("poller", "Polls for and published Prometheus metrics")
 	r := app.Command("receiver", "Received and pushes Prometheus metrics published by the poller")
+	e := app.Command("enroll", "Enrolls with a Puppet CA")
+
+	e.Arg("identity", "Certificate Name to use when enrolling").StringVar(&enrollIdentity)
+	e.Flag("ca", "Host and port for the Puppet CA in host:port format").Default("puppet:8140").StringVar(&enrollCA)
+	e.Flag("dir", "Directory to write SSL configuration to").Required().StringVar(&enrollDir)
 
 	cmd := kingpin.MustParse(app.Parse(os.Args[1:]))
+
+	wg = &sync.WaitGroup{}
+	ctx, cancel = context.WithCancel(context.Background())
+	defer cancel()
+
+	if debug {
+		log.SetLevel(log.DebugLevel)
+	}
+
+	if cmd == e.FullCommand() {
+		enroll()
+		return
+	}
 
 	cfg, err = parseCfg()
 	if err != nil {
@@ -57,10 +85,6 @@ func Run() {
 
 	writePID(pidfile)
 	configureLogging()
-
-	wg = &sync.WaitGroup{}
-	ctx, cancel = context.WithCancel(context.Background())
-	defer cancel()
 
 	go interrupWatcher(cancel)
 
@@ -84,7 +108,45 @@ func Run() {
 }
 
 func parseCfg() (*config.Config, error) {
+	if cfile == "" {
+		return nil, errors.New("no configuration file supplied using --config")
+	}
+
 	return config.NewConfig(cfile)
+}
+
+func enroll() {
+	cfg := puppetsec.Config{
+		Identity:   enrollIdentity,
+		SSLDir:     enrollDir,
+		DisableSRV: true,
+	}
+
+	re := regexp.MustCompile("^((([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\\-]*[a-zA-Z0-9])\\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\\-]*[A-Za-z0-9]))\\:(\\d+)$")
+
+	if re.MatchString(enrollCA) {
+		parts := strings.Split(enrollCA, ":")
+		cfg.PuppetCAHost = parts[0]
+
+		p, err := strconv.Atoi(parts[1])
+		if err != nil {
+			log.Fatalf("Could not enroll with the Puppet CA: %s", err)
+		}
+
+		cfg.PuppetCAPort = p
+	}
+
+	prov, err := puppetsec.New(puppetsec.WithConfig(&cfg), puppetsec.WithLog(log.WithField("provider", "puppet")))
+	if err != nil {
+		log.Fatalf("Could not enroll with the Puppet CA: %s", err)
+	}
+
+	wait, _ := time.ParseDuration("30m")
+
+	err = prov.Enroll(ctx, wait, func(try int) { fmt.Printf("Attempting to download certificate for %s, try %d.\n", enrollIdentity, try) })
+	if err != nil {
+		log.Fatalf("Could not enroll with the Puppet CA: %s", err)
+	}
 }
 
 func poll() {

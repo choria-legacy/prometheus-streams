@@ -2,13 +2,14 @@ package connection
 
 import (
 	"context"
+	"crypto/tls"
 	"fmt"
 	"time"
 
+	"github.com/choria-io/prometheus-streams/backoff"
 	"github.com/choria-io/prometheus-streams/config"
-	"github.com/choria-io/stream-replicator/backoff"
 	nats "github.com/nats-io/go-nats"
-	"github.com/nats-io/go-nats-streaming"
+	stan "github.com/nats-io/go-nats-streaming"
 	uuid "github.com/satori/go.uuid"
 	log "github.com/sirupsen/logrus"
 )
@@ -19,9 +20,10 @@ type Connection struct {
 	cid  string
 	urls string
 	Conn stan.Conn
+	tlsc *tls.Config
 }
 
-func NewConnection(ctx context.Context, cfg *config.StreamConfig) *Connection {
+func NewConnection(ctx context.Context, cfg *config.StreamConfig) (*Connection, error) {
 	if cfg.ClientID == "" {
 		cfg.ClientID = fmt.Sprintf("prometheus_streams_%s", uuid.NewV1().String())
 	}
@@ -33,9 +35,21 @@ func NewConnection(ctx context.Context, cfg *config.StreamConfig) *Connection {
 		urls: cfg.URLs,
 	}
 
+	if cfg.TLS != nil {
+		prov, err := cfg.TLS.SecurityProvider()
+		if err != nil {
+			return nil, fmt.Errorf("could not initiate security system: %s", err)
+		}
+
+		c.tlsc, err = prov.TLSConfig()
+		if err != nil {
+			return nil, fmt.Errorf("could not configure TLS settings: %s", err)
+		}
+	}
+
 	c.Connect()
 
-	return &c
+	return &c, nil
 }
 
 func (c *Connection) Connect() {
@@ -100,6 +114,10 @@ func (c *Connection) connectNATS() (natsc *nats.Conn) {
 
 	var err error
 	try := 0
+
+	if c.tlsc != nil {
+		options = append(options, nats.Secure(c.tlsc))
+	}
 
 	for {
 		try++

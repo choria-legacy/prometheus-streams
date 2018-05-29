@@ -2,9 +2,11 @@ package management
 
 import (
 	"context"
+	"fmt"
 	"sync"
 
 	"github.com/choria-io/go-choria/choria"
+	choriaconf "github.com/choria-io/go-choria/config"
 	"github.com/choria-io/go-choria/server"
 	"github.com/choria-io/prometheus-streams/config"
 	"github.com/choria-io/prometheus-streams/management/agent"
@@ -17,8 +19,9 @@ var (
 	cserver *server.Instance
 )
 
+// Configure configures the management interface based on the local config
 func Configure(conf *config.Config) error {
-	cfg, err := choria.NewConfig("/dev/null")
+	cfg, err := choriaconf.NewConfig("/dev/null")
 	if err != nil {
 		return err
 	}
@@ -42,6 +45,30 @@ func Configure(conf *config.Config) error {
 
 	cfg.DisableTLS = true
 
+	if conf.Management.TLS != nil {
+		cfg.DisableTLS = false
+
+		if conf.Management.TLS.Identity != "" {
+			cfg.Identity = conf.Management.TLS.Identity
+		}
+
+		switch conf.Management.TLS.Scheme {
+		case "puppet":
+			cfg.Choria.SecurityProvider = "puppet"
+			cfg.Choria.SSLDir = conf.Management.TLS.SSLDir
+
+		case "file", "manual":
+			cfg.Choria.SecurityProvider = "file"
+			cfg.Choria.FileSecurityCA = conf.Management.TLS.CA
+			cfg.Choria.FileSecurityCertificate = conf.Management.TLS.Cert
+			cfg.Choria.FileSecurityKey = conf.Management.TLS.Key
+			cfg.Choria.FileSecurityCache = conf.Management.TLS.Cache
+
+		default:
+			return fmt.Errorf("Security provider '%s' is not supported", conf.Management.TLS.Scheme)
+		}
+	}
+
 	fw, err = choria.NewWithConfig(cfg)
 	if err != nil {
 		return err
@@ -57,6 +84,7 @@ func Configure(conf *config.Config) error {
 	return nil
 }
 
+// Run runs the management interface
 func Run(ctx context.Context, wg *sync.WaitGroup) {
 	defer wg.Done()
 

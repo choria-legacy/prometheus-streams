@@ -30,6 +30,8 @@ type Config struct {
 	PushGateway    *PushGatewayConfig `json:"push_gateway"`
 	Management     *ManagementConfig  `json:"management"`
 
+	TLS *TLSConf `json:"tls"`
+
 	ConfigFile string `json:"-"`
 }
 
@@ -46,10 +48,11 @@ type Target struct {
 
 // StreamConfig is the target to publish data to
 type StreamConfig struct {
-	ClientID  string `json:"client_id"`
-	ClusterID string `json:"cluster_id"`
-	URLs      string `json:"urls"`
-	Topic     string `json:"topic"`
+	ClientID  string   `json:"client_id"`
+	ClusterID string   `json:"cluster_id"`
+	URLs      string   `json:"urls"`
+	Topic     string   `json:"topic"`
+	TLS       *TLSConf `json:"tls"`
 }
 
 // PushGatewayConfig where the receiver will publish metrics to
@@ -63,6 +66,7 @@ type ManagementConfig struct {
 	Brokers    []string `json:"brokers"`
 	Identity   string   `json:"identity"`
 	Collective string   `json:"collective"`
+	TLS        *TLSConf `json:"tls"`
 }
 
 // NewConfig parses a config file into a Config
@@ -131,6 +135,20 @@ func (cfg *Config) prepare() error {
 			if err != nil {
 				return err
 			}
+		}
+
+		if cfg.Management.TLS == nil && cfg.TLS != nil {
+			cfg.Management.TLS = cfg.TLS
+		}
+	}
+
+	if cfg.TLS != nil {
+		if cfg.PollerStream.TLS == nil {
+			cfg.PollerStream.TLS = cfg.TLS
+		}
+
+		if cfg.ReceiverStream.TLS == nil {
+			cfg.ReceiverStream.TLS = cfg.TLS
 		}
 	}
 
