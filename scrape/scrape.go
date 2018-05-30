@@ -27,6 +27,7 @@ var paused bool
 var running bool
 var stream *connection.Connection
 var hostname string
+var err error
 
 func Run(ctx context.Context, wg *sync.WaitGroup, scrapeCfg *config.Config) {
 	defer wg.Done()
@@ -36,7 +37,11 @@ func Run(ctx context.Context, wg *sync.WaitGroup, scrapeCfg *config.Config) {
 	running = true
 	cfg = scrapeCfg
 
-	stream = connection.NewConnection(ctx, scrapeCfg.PollerStream)
+	stream, err = connection.NewConnection(ctx, scrapeCfg.PollerStream)
+	if err != nil {
+		log.Errorf("Could not start scrape: %s", err)
+		return
+	}
 
 	jobsGauge.Set(float64(len(cfg.Jobs)))
 	pauseGauge.Set(0)

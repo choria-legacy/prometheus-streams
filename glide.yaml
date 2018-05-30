@@ -1,24 +1,34 @@
 package: github.com/choria-io/prometheus-streams
 import:
-- package: github.com/choria-io/stream-replicator
-  subpackages:
-  - backoff
-- package: github.com/nats-io/go-nats
-- package: github.com/nats-io/go-nats-streaming
-- package: github.com/prometheus/prometheus
-  subpackages:
-  - pkg/labels
-  - storage
-- package: github.com/sirupsen/logrus
-- package: github.com/ghodss/yaml
-- package: github.com/satori/go.uuid
-- package: gopkg.in/alecthomas/kingpin.v2
-  version: ^2.2.6
 - package: github.com/choria-io/go-choria
-  version: ^0.0.6
-- package: github.com/choria-io/go-validator
-  version: ^1.0.2
-- package: github.com/tidwall/sjson
-  version: ^1.0.0
+  subpackages:
+  - choria
+  - mcorpc
+  - server
+  - server/agents
+- package: github.com/choria-io/go-security
+  version: ^0.0.2
+  subpackages:
+  - filesec
+  - puppetsec
+- package: github.com/ghodss/yaml
+  version: ^1
+- package: github.com/nats-io/go-nats
+  version: ^1
+- package: github.com/nats-io/go-nats-streaming
+  version: ^0
 - package: github.com/prometheus/client_golang
-  version: ^0.9.0-pre1
+  subpackages:
+  - prometheus
+  - prometheus/promhttp
+- package: github.com/satori/go.uuid
+  version: ^1.2.0
+- package: github.com/sirupsen/logrus
+  version: ^1
+- package: github.com/tidwall/sjson
+  version: ^1
+- package: golang.org/x/net
+  subpackages:
+  - context/ctxhttp
+- package: gopkg.in/alecthomas/kingpin.v2
+  version: ^2

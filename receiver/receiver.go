@@ -26,6 +26,7 @@ var inbox = make(chan scrape.Scrape, 10)
 var maxAge int64
 var paused bool
 var running bool
+var err error
 
 func Run(ctx context.Context, wg *sync.WaitGroup, cfg *config.Config) {
 	defer wg.Done()
@@ -33,10 +34,15 @@ func Run(ctx context.Context, wg *sync.WaitGroup, cfg *config.Config) {
 	running = true
 	maxAge = cfg.MaxAge
 
-	conn := connection.NewConnection(ctx, cfg.ReceiverStream)
+	conn, err := connection.NewConnection(ctx, cfg.ReceiverStream)
+	if err != nil {
+		log.Errorf("Could not set up middleware connection: %s", err)
+		return
+	}
 
 	// timed out, ctx cancelled etc, anyway, its dead, nothing can be done
 	if conn.Conn == nil {
+		log.Errorf("Could not set up middleware connection, perhaps due to interrupt")
 		return
 	}
 

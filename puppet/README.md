@@ -63,3 +63,44 @@ class{"prometheus_streams":
 ```
 
 Full reference about the available options for configuring topics can be found in the project documentation.
+
+### TLS
+
+As of version 0.2.0 of the `prometheus-streams` package TLS is supported for all NATS connections and can be configured using this module.
+
+While this module support configuring TLS properties such as paths to certificates it cannot create the certificate for you, you have to arrange another means of delivering the SSL keys, certificates etc to the host - perhaps in your profile class.
+
+If you use the Puppet scheme you can configure it as below and use the `prometheus-streams enroll` command to create the SSL files:
+
+```puppet
+class{"prometheus_streams":
+  tls                     => {
+    "identity"            => $facts["fqdn"],
+    "scheme"              => "puppet",
+    "ssl_dir"             => "/etc/stream-replicator/ssl"
+  },
+  jobs                    => {
+    # as above
+  }
+}
+```
+
+If you have another CA you can configure it manually, the `cache` is used by the management interface only:
+
+```puppet
+class{"prometheus_streams":
+  tls                     => {
+    "identity"            => $facts["fqdn"],
+    "scheme"              => "manual",
+    "ca"                  => "/path/to/ca.pem",
+    "cert"                => "/path/to/cert.pem",
+    "key"                 => "/path/to/key.pem",
+    "cache"               => "/path/to/cache"
+  },
+  jobs                    => {
+    # as above
+  }
+}
+```
+
+These `tls` stanzas can be set either at the top level as here - where it will apply to all NATS connections - or on the individual `management`, `receiver_stream` and `poller_stream` level in the event that you need different set ups for these.

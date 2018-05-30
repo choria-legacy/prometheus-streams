@@ -31,6 +31,7 @@
 # @param receiver_stream Stream to read metrics from
 # @param push_gateway Push Gateway the Receiver will publish metrics to
 # @param management Configuration for the embedded Choria based management interface
+# @param tls System wide TLS configuration, when set applies to management and streams that do not have their own TLS configuration
 # @param jobs Targets to poll
 # @param poller_service_name The name of the Poller service
 # @param receiver_service_name The name of the Receiver service
@@ -52,6 +53,7 @@ class prometheus_streams (
     Variant[Prometheus_streams::Stream, Hash[0, 0]] $receiver_stream = {},
     Variant[Prometheus_streams::Push_gateway, Hash[0, 0]] $push_gateway = {},
     Variant[Prometheus_streams::Management, Hash[0, 0]] $management = {},
+    Optional[Variant[Prometheus_streams::FileSSL, Prometheus_streams::PuppetSSL]] $tls = undef,
     Hash[String, Prometheus_streams::Job] $jobs = {},
     String $poller_service_name = "prometheus-streams-poller",
     String $receiver_service_name = "prometheus-streams-receiver",

@@ -14,13 +14,19 @@ class prometheus_streams::config {
     }
 
     if !$prometheus_streams::management.empty {
-        $config = $base_config + {"management" => $prometheus_streams::management}
+        $mconfig = $base_config + {"management" => $prometheus_streams::management}
     } else {
-        $config = $base_config
+        $mconfig = $base_config
+    }
+
+    if $prometheus_streams::tls {
+        $config = $mconfig + {"tls" => $prometheus_streams::tls}
+    } else {
+        $config = $mconfig
     }
 
     file{$prometheus_streams::config_file:
-        ensure => $prometheus_streams::ensure,
+        ensure  => $prometheus_streams::ensure,
         content => to_yaml($config)
     }
 }
