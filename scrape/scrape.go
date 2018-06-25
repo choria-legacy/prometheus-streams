@@ -3,11 +3,13 @@ package scrape
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"sync"
 
 	"github.com/choria-io/prometheus-streams/build"
 	"github.com/choria-io/prometheus-streams/config"
 	"github.com/choria-io/prometheus-streams/connection"
+	"github.com/nats-io/go-nats-streaming"
 	"github.com/prometheus/client_golang/prometheus"
 	log "github.com/sirupsen/logrus"
 )
@@ -23,6 +25,7 @@ type Scrape struct {
 }
 
 var outbox = make(chan Scrape, 1000)
+var restart = make(chan struct{}, 1)
 var paused bool
 var running bool
 var stream *connection.Connection
@@ -37,7 +40,7 @@ func Run(ctx context.Context, wg *sync.WaitGroup, scrapeCfg *config.Config) {
 	running = true
 	cfg = scrapeCfg
 
-	stream, err = connection.NewConnection(ctx, scrapeCfg.PollerStream)
+	stream, err = connect(ctx, scrapeCfg)
 	if err != nil {
 		log.Errorf("Could not start scrape: %s", err)
 		return
@@ -53,12 +56,34 @@ func Run(ctx context.Context, wg *sync.WaitGroup, scrapeCfg *config.Config) {
 
 	for {
 		select {
+		case <-restart:
+			stream, err = connect(ctx, scrapeCfg)
+			if err != nil {
+				log.Errorf("Could not start scrape: %s", err)
+				return
+			}
+
 		case m := <-outbox:
 			publish(m)
+
 		case <-ctx.Done():
 			return
 		}
 	}
+}
+
+func connect(ctx context.Context, scrapeCfg *config.Config) (*connection.Connection, error) {
+	stream, err = connection.NewConnection(ctx, scrapeCfg.PollerStream, func(_ stan.Conn, reason error) {
+		errorCtr.Inc()
+		log.Errorf("Stream connection disconnected, initiating reconnection: %s", reason)
+		restart <- struct{}{}
+	})
+
+	if err != nil {
+		return nil, fmt.Errorf("Could not start scrape: %s", err)
+	}
+
+	return stream, nil
 }
 
 func publish(m Scrape) {
@@ -81,7 +106,7 @@ func publish(m Scrape) {
 
 	publishedCtr.Inc()
 
-	log.Debugf("Published %d bytes to %s", len(j), "prometheus")
+	log.Debugf("Published %d bytes to %s for job %s", len(j), cfg.PollerStream.Topic, m.Job)
 }
 
 func Paused() bool {

@@ -1,5 +1,5 @@
 hash: 1b1ab9b142570e0e7731e77eff0d80cf66d41e2ef4a60fd736b370f1c3bc3cfc
-updated: 2018-05-30T10:47:15.625856+02:00
+updated: 2018-06-25T15:29:47.677232+03:00
 imports:
 - name: github.com/alecthomas/template
   version: a0175ee3bccc567396460bf5acd36800cb10c49c
@@ -40,7 +40,7 @@ imports:
   - protocol
   - protocol/v1
 - name: github.com/choria-io/go-security
-  version: 615ff9a3ca0cabc08289e491ef8f57b6a51031a7
+  version: a221c72ee79ab400346d38837d7e8b289857247b
   subpackages:
   - filesec
   - puppetsec
@@ -82,7 +82,7 @@ imports:
   - encoders/builtin
   - util
 - name: github.com/nats-io/go-nats-streaming
-  version: 6e620057a207bd61e992c1c5b6a2de7b6a4cb010
+  version: e15a53f85e4932540600a16b56f6c4f65f58176f
   subpackages:
   - pb
 - name: github.com/nats-io/nuid
