@@ -48,7 +48,7 @@ func targetWorker(ctx context.Context, wg *sync.WaitGroup, jobname string, targe
 		timeout, cancel := context.WithTimeout(ctx, interval)
 		defer cancel()
 
-		log.Debugf("Polling %s @ %s", target.Name, target.URL)
+		log.Debugf("Polling job %s %s @ %s", jobname, target.Name, target.URL)
 		resp, err := ctxhttp.Get(timeout, client, target.URL)
 
 		if err != nil {

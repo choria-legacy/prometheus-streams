@@ -23,10 +23,12 @@ import (
 )
 
 var inbox = make(chan scrape.Scrape, 10)
+var restart = make(chan struct{})
 var maxAge int64
 var paused bool
 var running bool
 var err error
+var conn *connection.Connection
 
 func Run(ctx context.Context, wg *sync.WaitGroup, cfg *config.Config) {
 	defer wg.Done()
@@ -34,15 +36,9 @@ func Run(ctx context.Context, wg *sync.WaitGroup, cfg *config.Config) {
 	running = true
 	maxAge = cfg.MaxAge
 
-	conn, err := connection.NewConnection(ctx, cfg.ReceiverStream)
+	err = connect(ctx, cfg)
 	if err != nil {
-		log.Errorf("Could not set up middleware connection: %s", err)
-		return
-	}
-
-	// timed out, ctx cancelled etc, anyway, its dead, nothing can be done
-	if conn.Conn == nil {
-		log.Errorf("Could not set up middleware connection, perhaps due to interrupt")
+		log.Errorf("Could not connect: %s", err)
 		return
 	}
 
@@ -60,9 +56,46 @@ func Run(ctx context.Context, wg *sync.WaitGroup, cfg *config.Config) {
 	go poster(cfg)
 
 	select {
+	case <-restart:
+		conn.Close()
+		err = connect(ctx, cfg)
+		if err != nil {
+			log.Errorf("Could not connect: %s", err)
+			return
+		}
+
 	case <-ctx.Done():
 		conn.Conn.Close()
 	}
+}
+
+func connect(ctx context.Context, cfg *config.Config) error {
+	conn, err = connection.NewConnection(ctx, cfg.ReceiverStream, func(_ stan.Conn, reason error) {
+		errorCtr.WithLabelValues("unknown").Inc()
+		log.Errorf("Stream connection disconnected, initiating reconnection: %s", reason)
+		restart <- struct{}{}
+	})
+	if err != nil {
+		return fmt.Errorf("could not set up middleware connection: %s", err)
+	}
+
+	// timed out, ctx cancelled etc, anyway, its dead, nothing can be done
+	if conn.Conn == nil {
+		return fmt.Errorf("could not set up middleware connection, perhaps due to interrupt")
+	}
+
+	log.Infof("Choria Prometheus Streams Receiver version %s starting with configuration file %s", build.Version, cfg.ConfigFile)
+
+	opts := []stan.SubscriptionOption{
+		stan.DurableName(cfg.ReceiverStream.ClientID),
+		stan.DeliverAllAvailable(),
+		stan.SetManualAckMode(),
+		stan.MaxInflight(10),
+	}
+
+	conn.Conn.Subscribe(cfg.ReceiverStream.Topic, handler, opts...)
+
+	return nil
 }
 
 func Running() bool {

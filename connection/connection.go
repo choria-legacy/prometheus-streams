@@ -20,10 +20,11 @@ type Connection struct {
 	cid  string
 	urls string
 	Conn stan.Conn
+	nc   *nats.Conn
 	tlsc *tls.Config
 }
 
-func NewConnection(ctx context.Context, cfg *config.StreamConfig) (*Connection, error) {
+func NewConnection(ctx context.Context, cfg *config.StreamConfig, cb func(c stan.Conn, reason error)) (*Connection, error) {
 	if cfg.ClientID == "" {
 		cfg.ClientID = fmt.Sprintf("prometheus_streams_%s", uuid.NewV1().String())
 	}
@@ -47,26 +48,35 @@ func NewConnection(ctx context.Context, cfg *config.StreamConfig) (*Connection, 
 		}
 	}
 
-	c.Connect()
+	c.connect(cb)
 
 	return &c, nil
 }
 
-func (c *Connection) Connect() {
-	c.Conn = c.connectSTAN()
+func (c *Connection) connect(cb func(c stan.Conn, reason error)) {
+	c.Conn = c.connectSTAN(cb)
 }
 
 func (c *Connection) Close() {
-	c.Conn.Close()
+	err := c.Conn.Close()
+	if err != nil {
+		log.Errorf("Could not close Stream connection, ignoring: %s", err)
+	}
+
+	c.nc.Close()
 }
 
 func (c *Connection) Publish(target string, body []byte) error {
+	if c.Conn == nil {
+		return fmt.Errorf("not connected")
+	}
+
 	return c.Conn.Publish(target, body)
 }
 
-func (c *Connection) connectSTAN() stan.Conn {
-	n := c.connectNATS()
-	if n == nil {
+func (c *Connection) connectSTAN(cb func(stan.Conn, error)) stan.Conn {
+	c.nc = c.connectNATS()
+	if c.nc == nil {
 		log.Errorf("%s NATS connection could not be established, cannot connect to the Stream", c.name)
 		return nil
 	}
@@ -78,7 +88,7 @@ func (c *Connection) connectSTAN() stan.Conn {
 	for {
 		try++
 
-		conn, err = stan.Connect(c.cid, c.name, stan.NatsConn(n))
+		conn, err = stan.Connect(c.cid, c.name, stan.NatsConn(c.nc), stan.SetConnectionLostHandler(cb))
 		if err != nil {
 			log.Warnf("%s initial connection to the NATS Streaming broker cluster failed: %s", c.name, err)
 

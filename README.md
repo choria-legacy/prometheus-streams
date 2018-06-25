@@ -55,6 +55,11 @@ In practice this works remarkably well, even if I use the [Choria Stream Replica
 
 I deploy many Poller instances - 1 per data centre - and 1 receiver to put the data into the Push Gateway.  For my use case of ~10 monitored targets per DC this is more than sufficient.
 
+Requirements
+------------
+
+To get the most stable long running connection to the NATS Streaming Server you should use at least version 0.10.0 of the Streaming Server.
+
 Configuration
 -------------
 
