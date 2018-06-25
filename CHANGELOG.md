@@ -1,5 +1,8 @@
 |Date      |Issue |Description                                                                                              |
 |----------|------|---------------------------------------------------------------------------------------------------------|
+|2018/06/25|      |Release 0.2.0                                                                                            |
+|2018/06/25|51    |Handle connection errors better, now requires NATS Streaming Server 0.10.0 or newer                      |
+|2018/05/29|49    |Support SSL using the Choria Security subsystem, include enrolment in Puppet CA and manual configuration |
 |2018/04/10|      |Release 0.1.0                                                                                            |
 |2018/04/10|45    |The publisher name can be configured using the `identity` key in configuration and Puppet                |
 |2018/04/06|      |Release 0.0.7                                                                                            |
