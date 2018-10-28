@@ -8,9 +8,9 @@ import (
 
 	"github.com/choria-io/prometheus-streams/backoff"
 	"github.com/choria-io/prometheus-streams/config"
+	uuid "github.com/gofrs/uuid"
 	nats "github.com/nats-io/go-nats"
 	stan "github.com/nats-io/go-nats-streaming"
-	uuid "github.com/satori/go.uuid"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -26,7 +26,12 @@ type Connection struct {
 
 func NewConnection(ctx context.Context, cfg *config.StreamConfig, cb func(c stan.Conn, reason error)) (*Connection, error) {
 	if cfg.ClientID == "" {
-		cfg.ClientID = fmt.Sprintf("prometheus_streams_%s", uuid.NewV1().String())
+		id, err := uuid.NewV4()
+		if err != nil {
+			return nil, err
+		}
+
+		cfg.ClientID = fmt.Sprintf("prometheus_streams_%s", id.String())
 	}
 
 	c := Connection{

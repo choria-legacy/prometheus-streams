@@ -1,5 +1,5 @@
-hash: 1b1ab9b142570e0e7731e77eff0d80cf66d41e2ef4a60fd736b370f1c3bc3cfc
-updated: 2018-06-25T15:29:47.677232+03:00
+hash: 879519b1ebf68133ab5fd48fd2b66aa33f97e78476a31f5af632d3beb25c53f4
+updated: 2018-10-28T09:54:59.279862Z
 imports:
 - name: github.com/alecthomas/template
   version: a0175ee3bccc567396460bf5acd36800cb10c49c
@@ -8,18 +8,20 @@ imports:
 - name: github.com/alecthomas/units
   version: 2efee857e7cfd4f3d0138cc3cbb1b4966962b93a
 - name: github.com/beorn7/perks
-  version: 3a771d992973f24aa725d07868b467d1ddfceafb
+  version: 4c0e84591b9aa9e6dcfdf3e020114cd81f89d5f9
   subpackages:
   - quantile
 - name: github.com/choria-io/go-choria
-  version: a3b74b8d7769db8ec227d4cf0a75aaebb28ad2fd
+  version: c040c6c604f1234053941e2bba64670dced9f116
   subpackages:
   - backoff
   - build
   - choria
   - config
   - mcorpc
-  - mcorpc/audit
+  - plugin
+  - provtarget
+  - provtarget/builddefaults
   - puppet
   - registration
   - server
@@ -34,8 +36,10 @@ imports:
   - srvcache
 - name: github.com/choria-io/go-confkey
   version: 634d2c41860498507b0c7eeb2f8a33b1aa6a809d
+- name: github.com/choria-io/go-lifecycle
+  version: d46c4b2ca99b1c31cfc83995484dc93d4fd7a3d5
 - name: github.com/choria-io/go-protocol
-  version: b7292acc12958de22c268a49883e565aa667b402
+  version: c3117476636777d60c00a86b2d4b2b8fc56addb4
   subpackages:
   - protocol
   - protocol/v1
@@ -55,8 +59,15 @@ imports:
   - maxlength
   - regex
   - shellsafe
+- name: github.com/choria-io/mcorpc-agent-provider
+  version: 279845170e27ad55f55a3ced2c442eb91ad5334d
+  subpackages:
+  - mcorpc
+  - mcorpc/audit
 - name: github.com/ghodss/yaml
   version: 0ca9ea5df5451ffdf184b4428c902747c2c11cd7
+- name: github.com/gofrs/uuid
+  version: 370558f003bfe29580cd0f698d8640daccdcc45c
 - name: github.com/gogo/protobuf
   version: 99cb9b23110011cc45571c901ecae6f6f5e65cd3
   subpackages:
@@ -69,15 +80,17 @@ imports:
   - gomock
   - mockgen
 - name: github.com/golang/protobuf
-  version: df1d3ca07d2d07bba352d5b73c4313b4e2a6203e
+  version: 1643683e1b54a9e88ad26d98f81400c8c9d9f4f9
   subpackages:
   - proto
+- name: github.com/konsorten/go-windows-terminal-sequences
+  version: b729f2633dfe35f4d1d8a32385f6685610ce1cb5
 - name: github.com/matttproud/golang_protobuf_extensions
   version: c12348ce28de40eed0136aa2b644d0ee0650e56c
   subpackages:
   - pbutil
 - name: github.com/nats-io/go-nats
-  version: 062418ea1c2181f52dc0f954f6204370519a868b
+  version: fb0396ee0bdb8018b0fef30d6d1de798ce99cd05
   subpackages:
   - encoders/builtin
   - util
@@ -93,41 +106,39 @@ imports:
   - prometheus
   - prometheus/promhttp
 - name: github.com/prometheus/client_model
-  version: 6f3806018612930941127f2a7c6c453ba2c527d2
+  version: 99fa1f4be8e564e8a6b613da7fa6f46c9edafc6c
   subpackages:
   - go
 - name: github.com/prometheus/common
-  version: 61f87aac8082fa8c3c5655c7608d7478d46ac2ad
+  version: 89604d197083d4781071d3c65855d24ecfb0a563
   subpackages:
   - expfmt
   - internal/bitbucket.org/ww/goautoneg
   - model
 - name: github.com/prometheus/procfs
-  version: e645f4e5aaa8506fc71d6edbc5c4ff02c04c46f2
+  version: b15cd069a83443be3154b719d0cc9fe8117f09fb
   subpackages:
   - xfs
-- name: github.com/satori/go.uuid
-  version: f58768cc1a7a7e77a3bd49e98cdd21419399b6a3
 - name: github.com/sirupsen/logrus
-  version: c155da19408a8799da419ed3eeb0cb5db0ad5dbc
+  version: ad15b42461921f1fb3529b058c6786c6a45d5162
 - name: github.com/tidwall/gjson
-  version: 01f00f129617a6fe98941fb920d6c760241b54d2
+  version: 1e3f6aeaa5bad08d777ea7807b279a07885dd8b2
 - name: github.com/tidwall/match
   version: 1731857f09b1f38450e2c12409748407822dc6be
 - name: github.com/tidwall/sjson
-  version: 6a22caf2fd45d5e2119bfc3717e984f15a7eb7ee
+  version: 48d34adceb39a5bd6ed7c12f38c78cd425436442
 - name: github.com/xeipuuv/gojsonpointer
-  version: 4e3ac2762d5f479393488629ee9370b50873b3a6
+  version: 6fe8760cad3569743d51ddbb243b26f8456742dc
 - name: github.com/xeipuuv/gojsonreference
-  version: bd5ef7bd5415a7ac448318e64f11a24cd21e594b
+  version: e02fc20de94c78484cd5ffb007f8af96be030a45
 - name: github.com/xeipuuv/gojsonschema
-  version: 9ff6d6c47f3f5de55acc6f464d6e3719b02818ae
+  version: 511d08a359d14c0dd9c4302af52ee9abb6f93c2a
 - name: golang.org/x/crypto
   version: 9477e0b78b9ac3d0b03822fd95422e2fe07627cd
   subpackages:
   - ssh/terminal
 - name: golang.org/x/net
-  version: 89e543239a64caf31d3a6865872ea120b41446df
+  version: 5ccada7d0a7ba9aeb5d3aca8d3501b4c2a509fec
   subpackages:
   - context
   - context/ctxhttp
@@ -138,5 +149,5 @@ imports:
 - name: gopkg.in/alecthomas/kingpin.v2
   version: 947dcec5ba9c011838740e680966fd7087a71d0d
 - name: gopkg.in/yaml.v2
-  version: 5420a8b6744d3b0345ab293f6fcba19c978f1183
+  version: d670f9405373e636a5a2765eea47fac0c9bc91a4
 testImports: []

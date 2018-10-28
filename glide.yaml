@@ -1,6 +1,7 @@
 package: github.com/choria-io/prometheus-streams
 import:
 - package: github.com/choria-io/go-choria
+  version: c040c6c604f1234053941e2bba64670dced9f116
   subpackages:
   - choria
   - mcorpc
@@ -21,8 +22,6 @@ import:
   subpackages:
   - prometheus
   - prometheus/promhttp
-- package: github.com/satori/go.uuid
-  version: ^1.2.0
 - package: github.com/sirupsen/logrus
   version: ^1
 - package: github.com/tidwall/sjson
@@ -32,3 +31,6 @@ import:
   - context/ctxhttp
 - package: gopkg.in/alecthomas/kingpin.v2
   version: ^2
+- package: github.com/choria-io/mcorpc-agent-provider
+- package: github.com/gofrs/uuid
+  version: ^3.1.1
