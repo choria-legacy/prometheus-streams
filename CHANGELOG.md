@@ -1,15 +1,17 @@
 |Date      |Issue |Description                                                                                              |
 |----------|------|---------------------------------------------------------------------------------------------------------|
+|2018/11/28|      |Release 0.2.1                                                                                            |
+|2018/10/28|55    |Move to github.com/gofrs/uuid - a better maintained library                                              |
 |2018/06/25|      |Release 0.2.0                                                                                            |
 |2018/06/25|51    |Handle connection errors better, now requires NATS Streaming Server 0.10.0 or newer                      |
-|2018/05/29|49    |Support SSL using the Choria Security subsystem, include enrolment in Puppet CA and manual configuration |
+|2018/05/29|49    |Support SSL using the Choria Security subsystem, include enrollment in Puppet CA and manual configuration|
 |2018/04/10|      |Release 0.1.0                                                                                            |
 |2018/04/10|45    |The publisher name can be configured using the `identity` key in configuration and Puppet                |
 |2018/04/06|      |Release 0.0.7                                                                                            |
 |2018/04/05|41    |Support labeling metrics with the name of the poller                                                     |
 |2018/04/04|      |Release 0.0.6                                                                                            |
 |2018/04/04|33    |Do not use SRV records in the management agent                                                           |
-|2018/04/04|35    |Logrotation improvements                                                                                 |
+|2018/04/04|35    |Log rotation improvements                                                                                |
 |2018/04/04|34    |Announce version and config file at startup                                                              |
 |2018/02/15|26    |Remove some log noise that should have been debug level                                                  |
 |2018/02/15|25    |Simplify stats being kept that can be used to assist when last a host sent data                          |
