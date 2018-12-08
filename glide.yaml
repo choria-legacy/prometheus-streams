@@ -1,17 +1,5 @@
 package: github.com/choria-io/prometheus-streams
 import:
-- package: github.com/choria-io/go-choria
-  version: 5f2a57abf77fdbc2d3bb3a8ee49b31ebaf523a89
-  subpackages:
-  - choria
-  - mcorpc
-  - server
-  - server/agents
-- package: github.com/choria-io/go-security
-  version: ^0.2.1
-  subpackages:
-  - filesec
-  - puppetsec
 - package: github.com/ghodss/yaml
   version: ^1
 - package: github.com/nats-io/go-nats
@@ -32,8 +20,9 @@ import:
   - context/ctxhttp
 - package: gopkg.in/alecthomas/kingpin.v2
   version: ^2
-- package: github.com/choria-io/mcorpc-agent-provider
 - package: github.com/gofrs/uuid
   version: ^3.1.1
 - package: github.com/choria-io/go-backplane
   version: ^1.1.0
+- package: github.com/choria-io/go-lifecycle
+  version: 0.2.1

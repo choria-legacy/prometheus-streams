@@ -1,5 +1,5 @@
-hash: dad69545e6266dc5461bd2c41e852e29bf1d5b7e85e99455852e43d8e3e16fea
-updated: 2018-12-08T13:02:30.157124+01:00
+hash: 2639ea6c436f40848bcc1ee7938e13a87ec11b9a1b55b693bf02ab322862c96e
+updated: 2018-12-08T14:22:47.759045+01:00
 imports:
 - name: github.com/alecthomas/template
   version: a0175ee3bccc567396460bf5acd36800cb10c49c
@@ -16,13 +16,12 @@ imports:
   subpackages:
   - backplane
 - name: github.com/choria-io/go-choria
-  version: 5f2a57abf77fdbc2d3bb3a8ee49b31ebaf523a89
+  version: 684d9b00e1b5d35727bc46bffd3913b2ed45b8e6
   subpackages:
   - backoff
   - build
   - choria
   - config
-  - mcorpc
   - plugin
   - provtarget
   - provtarget/builddefaults
@@ -66,7 +65,7 @@ imports:
   - regex
   - shellsafe
 - name: github.com/choria-io/mcorpc-agent-provider
-  version: c6aa986d8a0ca81fca4994b3ce3dea22fd5f63fc
+  version: 279845170e27ad55f55a3ced2c442eb91ad5334d
   subpackages:
   - mcorpc
   - mcorpc/audit
@@ -76,7 +75,7 @@ imports:
   - mcorpc/golang/discovery
   - mcorpc/golang/rpcutil
 - name: github.com/choria-io/provisioning-agent
-  version: d7c49da1907a1de7751f7fe0ac5f9ad1156ea5ce
+  version: c5300d23e090eda3904af8edb909f267d17825a0
   subpackages:
   - agent
 - name: github.com/ghodss/yaml

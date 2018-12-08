@@ -19,15 +19,15 @@ task :build do
   packages = (ENV["PACKAGES"] || "").split(",")
   packages = ["el7_64", "el6_64", "el6_32", "puppet"] if packages.empty?
 
-  source = "/go/src/github.com/ripienaar/prometheus-streams"
+  source = "/go/src/github.com/choria-io/prometheus-streams"
 
   packages.each do |pkg|
     if pkg =~ /^(.+?)_(.+)$/
-      builder = "choria/packager:%s-go9.2" % $1
+      builder = "choria/packager:%s-go1.11" % $1
     elsif pkg == "puppet"
-      builder = "choria/packager:el7-go9.2-puppet"
+      builder = "choria/packager:el7-go1.11-puppet"
     else
-      builder = "choria/packager:el7-go9.2"
+      builder = "choria/packager:el7-go1.11"
     end
 
     sh 'docker run --rm -v `pwd`:%s -e SOURCE_DIR=%s -e ARTIFACTS=%s -e SHA1="%s" -e BUILD="%s" -e VERSION="%s" -e PACKAGE=%s %s' % [
@@ -49,9 +49,9 @@ task :build_binaries do
   sha = `git rev-parse --short HEAD`.chomp
   build = ENV["BUILD"] || "foss"
 
-  source = "/go/src/github.com/ripienaar/prometheus-streams"
+  source = "/go/src/github.com/choria-io/prometheus-streams"
 
-  sh 'docker run --rm  -v `pwd`:%s -e SOURCE_DIR=%s -e ARTIFACTS=%s -e SHA1="%s" -e BUILD="%s" -e VERSION="%s" -e BINARY_ONLY=1 choria/packager:el7-go9.2' % [
+  sh 'docker run --rm  -v `pwd`:%s -e SOURCE_DIR=%s -e ARTIFACTS=%s -e SHA1="%s" -e BUILD="%s" -e VERSION="%s" -e BINARY_ONLY=1 choria/packager:el7-go1.11' % [
     source,
     source,
     source,

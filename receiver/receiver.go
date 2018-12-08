@@ -12,6 +12,8 @@ import (
 	"sync"
 	"time"
 
+	"github.com/choria-io/go-lifecycle"
+
 	"github.com/choria-io/prometheus-streams/circuitbreaker"
 
 	"github.com/choria-io/prometheus-streams/build"
@@ -88,6 +90,18 @@ func connect(ctx context.Context, cfg *config.Config) error {
 	}
 
 	log.Infof("Choria Prometheus Streams Receiver version %s starting with configuration file %s", build.Version, cfg.ConfigFile)
+
+	event, err := lifecycle.New(lifecycle.Startup, lifecycle.Identity(cfg.Hostname), lifecycle.Component("prometheus_streams_receiver"), lifecycle.Version(build.Version))
+	if err != nil {
+		log.Errorf("Could not create startup lifecycle event: %s", err)
+	}
+
+	if event != nil {
+		err = lifecycle.PublishEvent(event, conn)
+		if err != nil {
+			log.Errorf("Could not publish lifecycle event: %s", err)
+		}
+	}
 
 	opts := []stan.SubscriptionOption{
 		stan.DurableName(cfg.ReceiverStream.ClientID),

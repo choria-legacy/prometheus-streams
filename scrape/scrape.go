@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"sync"
 
+	lifecycle "github.com/choria-io/go-lifecycle"
 	"github.com/choria-io/prometheus-streams/build"
 	"github.com/choria-io/prometheus-streams/circuitbreaker"
 	"github.com/choria-io/prometheus-streams/config"
@@ -81,6 +82,18 @@ func connect(ctx context.Context, scrapeCfg *config.Config) (*connection.Connect
 
 	if err != nil {
 		return nil, fmt.Errorf("Could not start scrape: %s", err)
+	}
+
+	event, err := lifecycle.New(lifecycle.Startup, lifecycle.Identity(cfg.Hostname), lifecycle.Component("prometheus_streams_poller"), lifecycle.Version(build.Version))
+	if err != nil {
+		log.Errorf("Could not create startup lifecycle event: %s", err)
+	}
+
+	if event != nil {
+		err = lifecycle.PublishEvent(event, stream)
+		if err != nil {
+			log.Errorf("Could not publish lifecycle event: %s", err)
+		}
 	}
 
 	return stream, nil
