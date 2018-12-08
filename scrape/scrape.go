@@ -7,6 +7,7 @@ import (
 	"sync"
 
 	"github.com/choria-io/prometheus-streams/build"
+	"github.com/choria-io/prometheus-streams/circuitbreaker"
 	"github.com/choria-io/prometheus-streams/config"
 	"github.com/choria-io/prometheus-streams/connection"
 	"github.com/nats-io/go-nats-streaming"
@@ -26,19 +27,18 @@ type Scrape struct {
 
 var outbox = make(chan Scrape, 1000)
 var restart = make(chan struct{}, 1)
-var paused bool
-var running bool
 var stream *connection.Connection
 var hostname string
 var err error
+var Pausable *circuitbreaker.Pausable
 
 func Run(ctx context.Context, wg *sync.WaitGroup, scrapeCfg *config.Config) {
 	defer wg.Done()
 
 	log.Infof("Choria Prometheus Streams Poller version %s starting with configuration file %s", build.Version, scrapeCfg.ConfigFile)
 
-	running = true
 	cfg = scrapeCfg
+	Pausable = circuitbreaker.New(pauseGauge)
 
 	stream, err = connect(ctx, scrapeCfg)
 	if err != nil {
@@ -107,28 +107,4 @@ func publish(m Scrape) {
 	publishedCtr.Inc()
 
 	log.Debugf("Published %d bytes to %s for job %s", len(j), cfg.PollerStream.Topic, m.Job)
-}
-
-func Paused() bool {
-	return paused
-}
-
-func FlipCircuitBreaker() bool {
-	paused = !paused
-
-	if paused {
-		pauseGauge.Set(1)
-	} else {
-		pauseGauge.Set(0)
-	}
-
-	if running {
-		log.Warnf("Switching the circuit breaker: paused: %t", paused)
-	}
-
-	return Paused()
-}
-
-func Running() bool {
-	return running
 }

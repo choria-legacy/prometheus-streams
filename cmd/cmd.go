@@ -15,10 +15,10 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/choria-io/go-backplane/backplane"
 	"github.com/choria-io/go-security/puppetsec"
 	"github.com/choria-io/prometheus-streams/build"
 	"github.com/choria-io/prometheus-streams/config"
-	"github.com/choria-io/prometheus-streams/management"
 	"github.com/choria-io/prometheus-streams/receiver"
 	"github.com/choria-io/prometheus-streams/scrape"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
@@ -101,10 +101,28 @@ func Run() {
 
 	err = configureManagement()
 	if err != nil {
-		kingpin.Fatalf("Could not configure management: %s", err)
+		log.Errorf("Management did not start: %s", err)
 	}
 
 	wg.Wait()
+}
+
+func configureManagement() error {
+	if cfg.Management == nil {
+		return nil
+	}
+
+	opts := []backplane.Option{backplane.ManageInfoSource(cfg)}
+	if receiver.Pausable != nil {
+		opts = append(opts, backplane.ManagePausable(receiver.Pausable))
+	} else if scrape.Pausable != nil {
+		opts = append(opts, backplane.ManagePausable(scrape.Pausable))
+	} else {
+		return fmt.Errorf("neither scrap nor receiver are running, cannot start backplane")
+	}
+
+	_, err := backplane.Run(ctx, wg, cfg.Management, opts...)
+	return err
 }
 
 func parseCfg() (*config.Config, error) {
@@ -192,22 +210,6 @@ func configureLogging() {
 	if cfg.Debug {
 		log.SetLevel(log.DebugLevel)
 	}
-}
-
-func configureManagement() error {
-	if cfg.Management == nil {
-		return nil
-	}
-
-	err := management.Configure(cfg)
-	if err != nil {
-		return err
-	}
-
-	wg.Add(1)
-	go management.Run(ctx, wg)
-
-	return nil
 }
 
 func writePID(pidfile string) {

@@ -12,6 +12,8 @@ import (
 	"sync"
 	"time"
 
+	"github.com/choria-io/prometheus-streams/circuitbreaker"
+
 	"github.com/choria-io/prometheus-streams/build"
 	"github.com/choria-io/prometheus-streams/connection"
 	"github.com/choria-io/prometheus-streams/scrape"
@@ -25,16 +27,17 @@ import (
 var inbox = make(chan scrape.Scrape, 10)
 var restart = make(chan struct{})
 var maxAge int64
-var paused bool
-var running bool
 var err error
 var conn *connection.Connection
+
+// Pausable is the circuit breaker for the receiver
+var Pausable *circuitbreaker.Pausable
 
 func Run(ctx context.Context, wg *sync.WaitGroup, cfg *config.Config) {
 	defer wg.Done()
 
-	running = true
 	maxAge = cfg.MaxAge
+	Pausable = circuitbreaker.New(pauseGauge)
 
 	err = connect(ctx, cfg)
 	if err != nil {
@@ -96,30 +99,6 @@ func connect(ctx context.Context, cfg *config.Config) error {
 	conn.Conn.Subscribe(cfg.ReceiverStream.Topic, handler, opts...)
 
 	return nil
-}
-
-func Running() bool {
-	return running
-}
-
-func Paused() bool {
-	return paused
-}
-
-func FlipCircuitBreaker() bool {
-	paused = !paused
-
-	if paused {
-		pauseGauge.Set(1)
-	} else {
-		pauseGauge.Set(0)
-	}
-
-	if running {
-		log.Warnf("Switching the circuit breaker: paused: %t", paused)
-	}
-
-	return Paused()
 }
 
 func poster(cfg *config.Config) {
@@ -185,7 +164,7 @@ func handler(msg *stan.Msg) {
 
 	msgCtr.Inc()
 
-	if paused {
+	if Pausable.Paused() {
 		return
 	}
 

@@ -1,5 +1,5 @@
-hash: 21a8646dc7b9313709094a62a7a9c93a68498b653040922fb8f469de1f85e6d2
-updated: 2018-12-07T18:04:46.648322+01:00
+hash: dad69545e6266dc5461bd2c41e852e29bf1d5b7e85e99455852e43d8e3e16fea
+updated: 2018-12-08T13:02:30.157124+01:00
 imports:
 - name: github.com/alecthomas/template
   version: a0175ee3bccc567396460bf5acd36800cb10c49c
@@ -11,6 +11,10 @@ imports:
   version: 3a771d992973f24aa725d07868b467d1ddfceafb
   subpackages:
   - quantile
+- name: github.com/choria-io/go-backplane
+  version: 8d19419a693164f0de31ef99a844a5db04798eae
+  subpackages:
+  - backplane
 - name: github.com/choria-io/go-choria
   version: 5f2a57abf77fdbc2d3bb3a8ee49b31ebaf523a89
   subpackages:
@@ -48,6 +52,8 @@ imports:
   subpackages:
   - filesec
   - puppetsec
+- name: github.com/choria-io/go-updater
+  version: 8c484a7b2a2a8e4fb51b3db81ff5dad15c512523
 - name: github.com/choria-io/go-validator
   version: 4ce2ef25983faa873cc4bcea0f1ef2a4273d42cc
   subpackages:
@@ -64,12 +70,21 @@ imports:
   subpackages:
   - mcorpc
   - mcorpc/audit
+  - mcorpc/ddl/agent
+  - mcorpc/golang
+  - mcorpc/golang/choriautil
+  - mcorpc/golang/discovery
+  - mcorpc/golang/rpcutil
+- name: github.com/choria-io/provisioning-agent
+  version: d7c49da1907a1de7751f7fe0ac5f9ad1156ea5ce
+  subpackages:
+  - agent
 - name: github.com/ghodss/yaml
   version: 0ca9ea5df5451ffdf184b4428c902747c2c11cd7
 - name: github.com/gofrs/uuid
   version: 7077aa61129615a0d7f45c49101cd011ab221c27
 - name: github.com/gogo/protobuf
-  version: 99cb9b23110011cc45571c901ecae6f6f5e65cd3
+  version: e87afe3c25daf6fa321fed3705938e53672b0a3b
   subpackages:
   - gogoproto
   - proto
@@ -111,7 +126,7 @@ imports:
   subpackages:
   - go
 - name: github.com/prometheus/common
-  version: 61f87aac8082fa8c3c5655c7608d7478d46ac2ad
+  version: 41aa239b4cce3c56ab88fc366ae8b0a6423fa239
   subpackages:
   - expfmt
   - internal/bitbucket.org/ww/goautoneg
@@ -125,7 +140,7 @@ imports:
 - name: github.com/sirupsen/logrus
   version: bcd833dfe83d3cebad139e4a29ed79cb2318bf95
 - name: github.com/tidwall/gjson
-  version: 1e3f6aeaa5bad08d777ea7807b279a07885dd8b2
+  version: 081192fa2e471ddff3ec98a3cc04fecfd031ed57
 - name: github.com/tidwall/match
   version: 1731857f09b1f38450e2c12409748407822dc6be
 - name: github.com/tidwall/sjson
@@ -146,7 +161,7 @@ imports:
   - context
   - context/ctxhttp
 - name: golang.org/x/sys
-  version: f7928cfef4d09d1b080aa2b6fd3ca9ba1567c733
+  version: 66b7b1311ac80bbafcd2daeef9a5e6e2cd1e2399
   subpackages:
   - unix
 - name: gopkg.in/alecthomas/kingpin.v2
