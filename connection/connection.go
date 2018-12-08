@@ -79,6 +79,11 @@ func (c *Connection) Publish(target string, body []byte) error {
 	return c.Conn.Publish(target, body)
 }
 
+// PublishRaw implements lifecycle.PublishConnector
+func (c *Connection) PublishRaw(target string, body []byte) error {
+	return c.Publish(target, body)
+}
+
 func (c *Connection) connectSTAN(cb func(stan.Conn, error)) stan.Conn {
 	c.nc = c.connectNATS()
 	if c.nc == nil {
