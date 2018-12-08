@@ -104,12 +104,15 @@ push_gateway:
   # when true labels will be added with the hostname of the publisher
   publisher_label: true
 
-# enable a choria based management interface for circuit breaking
+# enable a choria backplane management interface for circuit breaking
 management:
-  identity: prom.example.net # defaults to hostname
-  collective: prometheus # the default
+  name: app
+  logfile: "/var/log/app/backplane.log"
+  loglevel: warn
+
   brokers:
-    - choria.example.net:4222
+    - choria1.example.net:4222
+    - choria2.example.net:4222
 
 # This is what gets polled
 jobs:
@@ -176,40 +179,7 @@ It will also add itself as a scrape job called `prometheus_streams` and set up a
 Management
 ----------
 
-A Choria server is embedded that can be used for management capabilities, this include extracting current information about the process and a circuit breaker to stop all processing.
-
-To enable it provide a *management* block in the configuration else it will be ignored.
-
-```
-$ mco rpc prometheus_streams switch -T prometheus
-Discovering hosts using the mc method for 2 second(s) .... 1
-
- * [ ============================================================> ] 1 / 1
-
-
-prom.example.net
-     Mode: poller
-   Paused: true
-
-
-Summary of Mode:
-
-   poller = 1
-
-Summary of Paused:
-
-   false = 1
-
-Finished processing 1 / 1 hosts in 399.81 ms
-```
-
-At this point all processing will stop, no polling will be done and received messages will be discarded.  Switch it again to enable.
-
-The `info` action returns the same data.
-
-You can extract the running configuration using something like `mco rpc rpcutil get_fact fact=config -T prometheus`
-
-**NOTE:** TLS is not currently supported, this feature is basically a bit of a work in progress / experiment.
+We embed an instance of the [Choria Backplane](https://github.com/choria-io/go-backplane), please review it's documentation for full background including sample configuration.  We implement the `Standard Backplane specific configuration` shown in it's example.
 
 Packages
 --------

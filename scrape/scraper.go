@@ -41,7 +41,7 @@ func targetWorker(ctx context.Context, wg *sync.WaitGroup, jobname string, targe
 		obs := prometheus.NewTimer(pollTime.WithLabelValues(jobname, target.Name))
 		defer obs.ObserveDuration()
 
-		if paused {
+		if Pausable.Paused() {
 			return
 		}
 

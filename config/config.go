@@ -2,13 +2,13 @@ package config
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 	"io/ioutil"
 	"net/url"
 	"os"
 	"time"
 
+	"github.com/choria-io/go-backplane/backplane"
 	"github.com/ghodss/yaml"
 )
 
@@ -25,10 +25,10 @@ type Config struct {
 	MonitorPort int64  `json:"monitor_port"`
 
 	Jobs           map[string]*Job
-	PollerStream   *StreamConfig      `json:"poller_stream"`
-	ReceiverStream *StreamConfig      `json:"receiver_stream"`
-	PushGateway    *PushGatewayConfig `json:"push_gateway"`
-	Management     *ManagementConfig  `json:"management"`
+	PollerStream   *StreamConfig                    `json:"poller_stream"`
+	ReceiverStream *StreamConfig                    `json:"receiver_stream"`
+	PushGateway    *PushGatewayConfig               `json:"push_gateway"`
+	Management     *backplane.StandardConfiguration `json:"management"`
 
 	TLS *TLSConf `json:"tls"`
 
@@ -59,14 +59,6 @@ type StreamConfig struct {
 type PushGatewayConfig struct {
 	URL            string `json:"url"`
 	PublisherLabel bool   `json:"publisher_label"`
-}
-
-// ManagementConfig configuration for the embedded Choria instance
-type ManagementConfig struct {
-	Brokers    []string `json:"brokers"`
-	Identity   string   `json:"identity"`
-	Collective string   `json:"collective"`
-	TLS        *TLSConf `json:"tls"`
 }
 
 // NewConfig parses a config file into a Config
@@ -121,27 +113,6 @@ func (cfg *Config) prepare() error {
 		}
 	}
 
-	if cfg.Management != nil {
-		if len(cfg.Management.Brokers) == 0 {
-			return errors.New("No Choria broker specified, cannot configure management")
-		}
-
-		if cfg.Management.Collective == "" {
-			cfg.Management.Collective = "prometheus"
-		}
-
-		if cfg.Management.Identity == "" {
-			cfg.Management.Identity, err = os.Hostname()
-			if err != nil {
-				return err
-			}
-		}
-
-		if cfg.Management.TLS == nil && cfg.TLS != nil {
-			cfg.Management.TLS = cfg.TLS
-		}
-	}
-
 	if cfg.TLS != nil {
 		if cfg.PollerStream.TLS == nil {
 			cfg.PollerStream.TLS = cfg.TLS
@@ -149,6 +120,18 @@ func (cfg *Config) prepare() error {
 
 		if cfg.ReceiverStream.TLS == nil {
 			cfg.ReceiverStream.TLS = cfg.TLS
+		}
+
+		if cfg.Management != nil && cfg.Management.TLSConf == nil {
+			cfg.Management.TLSConf = &backplane.TLSConf{
+				CA:       cfg.TLS.CA,
+				Cache:    cfg.TLS.Cache,
+				Cert:     cfg.TLS.Cert,
+				Identity: cfg.TLS.Identity,
+				Key:      cfg.TLS.Key,
+				SSLDir:   cfg.TLS.SSLDir,
+				Scheme:   cfg.TLS.Scheme,
+			}
 		}
 	}
 
