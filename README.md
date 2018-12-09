@@ -14,6 +14,11 @@ In many sites though users are unable to open the intra DC HTTP ports this requi
 
 I do already have a NATS Stream based middleware system that spans the globe, this system lets me piggy back on that globe spanning stream for sending my metrics to a central Prometheus.  Giving me a nice single instance for logging, metrics etc.
 
+Status
+------
+
+This software has reached 1.0.0 level and are now subject to SemVer versioning.  It's in use by us in over 50 data centers and have proven to be stable and reliable.
+
 When To Use
 -----------
 
