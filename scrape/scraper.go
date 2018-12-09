@@ -42,13 +42,15 @@ func targetWorker(ctx context.Context, wg *sync.WaitGroup, jobname string, targe
 		defer obs.ObserveDuration()
 
 		if Pausable.Paused() {
+			log.Debugf("Skipping poll for job %s while paused", jobname)
 			return
 		}
+
+		log.Debugf("Polling job %s %s @ %s", jobname, target.Name, target.URL)
 
 		timeout, cancel := context.WithTimeout(ctx, interval)
 		defer cancel()
 
-		log.Debugf("Polling job %s %s @ %s", jobname, target.Name, target.URL)
 		resp, err := ctxhttp.Get(timeout, client, target.URL)
 
 		if err != nil {
@@ -94,6 +96,8 @@ func targetWorker(ctx context.Context, wg *sync.WaitGroup, jobname string, targe
 			Publisher: cfg.Hostname,
 		}
 	}
+
+	poll()
 
 	for {
 		select {

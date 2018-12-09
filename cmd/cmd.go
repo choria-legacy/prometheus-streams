@@ -113,12 +113,17 @@ func configureManagement() error {
 	}
 
 	opts := []backplane.Option{backplane.ManageInfoSource(cfg)}
-	if receiver.Pausable != nil {
-		opts = append(opts, backplane.ManagePausable(receiver.Pausable))
-	} else if scrape.Pausable != nil {
-		opts = append(opts, backplane.ManagePausable(scrape.Pausable))
-	} else {
-		return fmt.Errorf("neither scrap nor receiver are running, cannot start backplane")
+
+	for {
+		if receiver.Pausable != nil {
+			opts = append(opts, backplane.ManagePausable(receiver.Pausable))
+			break
+		} else if scrape.Pausable != nil {
+			opts = append(opts, backplane.ManagePausable(scrape.Pausable))
+			break
+		} else {
+			time.Sleep(1 * time.Second)
+		}
 	}
 
 	_, err := backplane.Run(ctx, wg, cfg.Management, opts...)

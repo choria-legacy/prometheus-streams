@@ -51,7 +51,7 @@ func (p *Pausable) Flip() {
 // Paused implements backplane.Pausable
 func (p *Pausable) Paused() bool {
 	p.Lock()
-	defer p.Lock()
+	defer p.Unlock()
 
 	return p.paused
 }
