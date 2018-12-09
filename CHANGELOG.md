@@ -1,5 +1,10 @@
 |Date      |Issue |Description                                                                                              |
 |----------|------|---------------------------------------------------------------------------------------------------------|
+|2018/12/09|      |Release 1.0.0                                                                                            |
+|2018/12/09|30    |Continue to publish own metrics while paused using the circuit breaker                                   |
+|2018/12/08|54    |Emit a Choria lifecycle event on startup                                                                 |
+|2018/12/08|58    |Use Choria backplane for management and remove unique management tool from this code                     |
+|2018/12/07|60    |Update prometheus client code to a release version rather than beta                                      |
 |2018/11/28|      |Release 0.2.1                                                                                            |
 |2018/10/28|55    |Move to github.com/gofrs/uuid - a better maintained library                                              |
 |2018/06/25|      |Release 0.2.0                                                                                            |
