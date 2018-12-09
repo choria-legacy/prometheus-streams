@@ -20,7 +20,7 @@ import (
 	"github.com/choria-io/prometheus-streams/connection"
 	"github.com/choria-io/prometheus-streams/scrape"
 	"github.com/prometheus/client_golang/prometheus"
-	log "github.com/sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 
 	"github.com/choria-io/prometheus-streams/config"
 	"github.com/nats-io/go-nats-streaming"
@@ -31,6 +31,7 @@ var restart = make(chan struct{})
 var maxAge int64
 var err error
 var conn *connection.Connection
+var log *logrus.Entry
 
 // Pausable is the circuit breaker for the receiver
 var Pausable *circuitbreaker.Pausable
@@ -38,6 +39,7 @@ var Pausable *circuitbreaker.Pausable
 func Run(ctx context.Context, wg *sync.WaitGroup, cfg *config.Config) {
 	defer wg.Done()
 
+	log = cfg.Log("receiver")
 	maxAge = cfg.MaxAge
 	Pausable = circuitbreaker.New(pauseGauge)
 
@@ -75,7 +77,7 @@ func Run(ctx context.Context, wg *sync.WaitGroup, cfg *config.Config) {
 }
 
 func connect(ctx context.Context, cfg *config.Config) error {
-	conn, err = connection.NewConnection(ctx, cfg.ReceiverStream, func(_ stan.Conn, reason error) {
+	conn, err = connection.NewConnection(ctx, cfg.ReceiverStream, cfg.Log("connector"), func(_ stan.Conn, reason error) {
 		errorCtr.WithLabelValues("unknown").Inc()
 		log.Errorf("Stream connection disconnected, initiating reconnection: %s", reason)
 		restart <- struct{}{}

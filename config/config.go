@@ -10,6 +10,7 @@ import (
 
 	"github.com/choria-io/go-backplane/backplane"
 	"github.com/ghodss/yaml"
+	"github.com/sirupsen/logrus"
 )
 
 // Config configures the targets to scrape
@@ -30,7 +31,8 @@ type Config struct {
 	PushGateway    *PushGatewayConfig               `json:"push_gateway"`
 	Management     *backplane.StandardConfiguration `json:"management"`
 
-	TLS *TLSConf `json:"tls"`
+	Logger *logrus.Entry `json:"-"`
+	TLS    *TLSConf      `json:"tls"`
 
 	ConfigFile string `json:"-"`
 }
@@ -91,6 +93,11 @@ func NewConfig(file string) (*Config, error) {
 	err = cfg.prepare()
 
 	return cfg, err
+}
+
+// Log returns the logger
+func (cfg *Config) Log(c string) *logrus.Entry {
+	return cfg.Logger.WithField("component", c)
 }
 
 // checks all urls are valid and set empty names to the host:port of the url

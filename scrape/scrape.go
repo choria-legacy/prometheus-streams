@@ -13,10 +13,11 @@ import (
 	"github.com/choria-io/prometheus-streams/connection"
 	"github.com/nats-io/go-nats-streaming"
 	"github.com/prometheus/client_golang/prometheus"
-	log "github.com/sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 )
 
 var cfg *config.Config
+var log *logrus.Entry
 
 type Scrape struct {
 	Job       string `json:"job"`
@@ -35,6 +36,8 @@ var Pausable *circuitbreaker.Pausable
 
 func Run(ctx context.Context, wg *sync.WaitGroup, scrapeCfg *config.Config) {
 	defer wg.Done()
+
+	log = scrapeCfg.Log("poller")
 
 	log.Infof("Choria Prometheus Streams Poller version %s starting with configuration file %s", build.Version, scrapeCfg.ConfigFile)
 
@@ -74,7 +77,7 @@ func Run(ctx context.Context, wg *sync.WaitGroup, scrapeCfg *config.Config) {
 }
 
 func connect(ctx context.Context, scrapeCfg *config.Config) (*connection.Connection, error) {
-	stream, err = connection.NewConnection(ctx, scrapeCfg.PollerStream, func(_ stan.Conn, reason error) {
+	stream, err = connection.NewConnection(ctx, scrapeCfg.PollerStream, scrapeCfg.Log("connector"), func(_ stan.Conn, reason error) {
 		errorCtr.Inc()
 		log.Errorf("Stream connection disconnected, initiating reconnection: %s", reason)
 		restart <- struct{}{}
