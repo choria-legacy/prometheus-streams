@@ -22,7 +22,7 @@ import (
 	"github.com/choria-io/prometheus-streams/receiver"
 	"github.com/choria-io/prometheus-streams/scrape"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
-	log "github.com/sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 	kingpin "gopkg.in/alecthomas/kingpin.v2"
 )
 
@@ -35,6 +35,7 @@ var (
 	ctx     context.Context
 	cancel  func()
 	debug   bool
+	log     *logrus.Entry
 
 	enrollIdentity string
 	enrollCA       string
@@ -65,8 +66,10 @@ func Run() {
 	ctx, cancel = context.WithCancel(context.Background())
 	defer cancel()
 
+	log = logrus.NewEntry(logrus.New())
+
 	if debug {
-		log.SetLevel(log.DebugLevel)
+		log.Logger.SetLevel(logrus.DebugLevel)
 	}
 
 	if cmd == e.FullCommand() {
@@ -194,8 +197,10 @@ func interrupWatcher(cancel func()) {
 }
 
 func configureLogging() {
+	cfg.Logger = log
+
 	if cfg.LogFile != "" {
-		log.SetFormatter(&log.JSONFormatter{})
+		log.Logger.SetFormatter(&logrus.JSONFormatter{})
 
 		file, err := os.OpenFile(cfg.LogFile, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0666)
 		if err != nil {
@@ -203,17 +208,17 @@ func configureLogging() {
 			os.Exit(1)
 		}
 
-		log.SetOutput(file)
+		log.Logger.SetOutput(file)
 	}
 
-	log.SetLevel(log.InfoLevel)
+	log.Logger.SetLevel(logrus.InfoLevel)
 
 	if cfg.Verbose {
-		log.SetLevel(log.InfoLevel)
+		log.Logger.SetLevel(logrus.InfoLevel)
 	}
 
 	if cfg.Debug {
-		log.SetLevel(log.DebugLevel)
+		log.Logger.SetLevel(logrus.DebugLevel)
 	}
 }
 

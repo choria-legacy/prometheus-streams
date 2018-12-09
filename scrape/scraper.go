@@ -11,7 +11,6 @@ import (
 
 	"github.com/choria-io/prometheus-streams/config"
 	"github.com/prometheus/client_golang/prometheus"
-	log "github.com/sirupsen/logrus"
 	"golang.org/x/net/context/ctxhttp"
 )
 
@@ -29,20 +28,19 @@ func jobWorker(ctx context.Context, wg *sync.WaitGroup, name string, job *config
 func targetWorker(ctx context.Context, wg *sync.WaitGroup, jobname string, target *config.Target) {
 	defer wg.Done()
 
-	interval, _ := time.ParseDuration(cfg.Interval)
-
-	log.Infof("Polling %s using url %s every %s", target.Name, target.URL, interval)
-
-	timer := time.NewTicker(interval)
-
+	interval, err := time.ParseDuration(cfg.Interval)
+	if err != nil {
+		log.Errorf("Could not parse interval '%s', defaulting to 30s: %s", cfg.Interval, err)
+		interval = time.Duration(30 * time.Second)
+	}
 	client := &http.Client{}
 
 	poll := func() {
 		obs := prometheus.NewTimer(pollTime.WithLabelValues(jobname, target.Name))
 		defer obs.ObserveDuration()
 
-		if Pausable.Paused() {
-			log.Debugf("Skipping poll for job %s while paused", jobname)
+		if Pausable.Paused() && jobname != "prometheus_streams" {
+			log.Warnf("Skipping poll for job %s while paused", jobname)
 			return
 		}
 
@@ -95,13 +93,20 @@ func targetWorker(ctx context.Context, wg *sync.WaitGroup, jobname string, targe
 			Scrape:    cbody,
 			Publisher: cfg.Hostname,
 		}
+
+		log.Debugf("Completed poll of job %s", jobname)
 	}
+
+	ticker := time.NewTicker(interval)
+	defer ticker.Stop()
+
+	log.Infof("Polling %s using url %s every %s", target.Name, target.URL, interval)
 
 	poll()
 
 	for {
 		select {
-		case <-timer.C:
+		case <-ticker.C:
 			poll()
 		case <-ctx.Done():
 			return

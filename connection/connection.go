@@ -11,7 +11,7 @@ import (
 	uuid "github.com/gofrs/uuid"
 	nats "github.com/nats-io/go-nats"
 	stan "github.com/nats-io/go-nats-streaming"
-	log "github.com/sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 )
 
 type Connection struct {
@@ -22,9 +22,10 @@ type Connection struct {
 	Conn stan.Conn
 	nc   *nats.Conn
 	tlsc *tls.Config
+	log  *logrus.Entry
 }
 
-func NewConnection(ctx context.Context, cfg *config.StreamConfig, cb func(c stan.Conn, reason error)) (*Connection, error) {
+func NewConnection(ctx context.Context, cfg *config.StreamConfig, log *logrus.Entry, cb func(c stan.Conn, reason error)) (*Connection, error) {
 	if cfg.ClientID == "" {
 		id, err := uuid.NewV4()
 		if err != nil {
@@ -39,6 +40,7 @@ func NewConnection(ctx context.Context, cfg *config.StreamConfig, cb func(c stan
 		name: cfg.ClientID,
 		cid:  cfg.ClusterID,
 		urls: cfg.URLs,
+		log:  log,
 	}
 
 	if cfg.TLS != nil {
@@ -65,7 +67,7 @@ func (c *Connection) connect(cb func(c stan.Conn, reason error)) {
 func (c *Connection) Close() {
 	err := c.Conn.Close()
 	if err != nil {
-		log.Errorf("Could not close Stream connection, ignoring: %s", err)
+		c.log.Errorf("Could not close Stream connection, ignoring: %s", err)
 	}
 
 	c.nc.Close()
@@ -86,14 +88,14 @@ func (c *Connection) PublishRaw(target string, body []byte) error {
 
 	}
 
-	log.Infof("publishing to %s on %s", target, c.nc.ConnectedUrl())
+	c.log.Infof("publishing to %s on %s", target, c.nc.ConnectedUrl())
 	return c.nc.Publish(target, body)
 }
 
 func (c *Connection) connectSTAN(cb func(stan.Conn, error)) stan.Conn {
 	c.nc = c.connectNATS()
 	if c.nc == nil {
-		log.Errorf("%s NATS connection could not be established, cannot connect to the Stream", c.name)
+		c.log.Errorf("%s NATS connection could not be established, cannot connect to the Stream", c.name)
 		return nil
 	}
 
@@ -106,14 +108,14 @@ func (c *Connection) connectSTAN(cb func(stan.Conn, error)) stan.Conn {
 
 		conn, err = stan.Connect(c.cid, c.name, stan.NatsConn(c.nc), stan.SetConnectionLostHandler(cb))
 		if err != nil {
-			log.Warnf("%s initial connection to the NATS Streaming broker cluster failed: %s", c.name, err)
+			c.log.Warnf("%s initial connection to the NATS Streaming broker cluster failed: %s", c.name, err)
 
 			if c.ctx.Err() != nil {
-				log.Errorf("%s initial connection cancelled due to shut down", c.name)
+				c.log.Errorf("%s initial connection cancelled due to shut down", c.name)
 				return nil
 			}
 
-			log.Infof("%s NATS Stream client failed connection attempt %d", c.name, try)
+			c.log.Infof("%s NATS Stream client failed connection attempt %d", c.name, try)
 
 			if backoff.FiveSec.InterruptableSleep(c.ctx, try) != nil {
 				return nil
@@ -150,15 +152,15 @@ func (c *Connection) connectNATS() (natsc *nats.Conn) {
 
 		natsc, err = nats.Connect(c.urls, options...)
 		if err != nil {
-			log.Warnf("%s initial connection to the NATS broker cluster failed: %s", c.name, err)
+			c.log.Warnf("%s initial connection to the NATS broker cluster failed: %s", c.name, err)
 
 			if c.ctx.Err() != nil {
-				log.Errorf("%s initial connection cancelled due to shut down", c.name)
+				c.log.Errorf("%s initial connection cancelled due to shut down", c.name)
 				return nil
 			}
 
 			s := backoff.FiveSec.Duration(try)
-			log.Infof("%s NATS client sleeping %s after failed connection attempt %d", c.name, s, try)
+			c.log.Infof("%s NATS client sleeping %s after failed connection attempt %d", c.name, s, try)
 
 			timer := time.NewTimer(s)
 
@@ -166,12 +168,12 @@ func (c *Connection) connectNATS() (natsc *nats.Conn) {
 			case <-timer.C:
 				continue
 			case <-c.ctx.Done():
-				log.Errorf("%s initial connection cancelled due to shut down", c.name)
+				c.log.Errorf("%s initial connection cancelled due to shut down", c.name)
 				return nil
 			}
 		}
 
-		log.Infof("%s NATS client connected to %s", c.name, natsc.ConnectedUrl())
+		c.log.Infof("%s NATS client connected to %s", c.name, natsc.ConnectedUrl())
 
 		break
 	}
@@ -183,27 +185,27 @@ func (c *Connection) disconCb(nc *nats.Conn) {
 	err := nc.LastError()
 
 	if err != nil {
-		log.Warnf("%s NATS client connection got disconnected: %s", nc.Opts.Name, err)
+		c.log.Warnf("%s NATS client connection got disconnected: %s", nc.Opts.Name, err)
 	} else {
-		log.Warnf("%s NATS client connection got disconnected", nc.Opts.Name)
+		c.log.Warnf("%s NATS client connection got disconnected", nc.Opts.Name)
 	}
 }
 
 func (c *Connection) reconCb(nc *nats.Conn) {
-	log.Warnf("%s NATS client reconnected after a previous disconnection, connected to %s", nc.Opts.Name, nc.ConnectedUrl())
+	c.log.Warnf("%s NATS client reconnected after a previous disconnection, connected to %s", nc.Opts.Name, nc.ConnectedUrl())
 }
 
 func (c *Connection) closedCb(nc *nats.Conn) {
 	err := nc.LastError()
 
 	if err != nil {
-		log.Warnf("%s NATS client connection closed: %s", nc.Opts.Name, err)
+		c.log.Warnf("%s NATS client connection closed: %s", nc.Opts.Name, err)
 	} else {
-		log.Warnf("%s NATS client connection closed", nc.Opts.Name)
+		c.log.Warnf("%s NATS client connection closed", nc.Opts.Name)
 	}
 
 }
 
 func (c *Connection) errorCb(nc *nats.Conn, sub *nats.Subscription, err error) {
-	log.Errorf("%s NATS client on %s encountered an error: %s", nc.Opts.Name, nc.ConnectedUrl(), err)
+	c.log.Errorf("%s NATS client on %s encountered an error: %s", nc.Opts.Name, nc.ConnectedUrl(), err)
 }
